@@ -38,7 +38,7 @@ class ConceptLookup():
 
     def lookup_labelid_from_label(self, label, collectionid):
         ret = []
-        for la in label.split(','):
+        for la in label.split(';'):
             ret.append(self.lookup_label(la.strip(), collectionid))
         return (',').join(ret)
 
