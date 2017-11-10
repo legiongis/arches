@@ -398,6 +398,7 @@ class CsvReader(Reader):
 
                 def check_required_nodes(tile, required_nodes, all_nodes):
                     # Check that each required node in a tile is populated.
+                    return
                     errors = []
                     if len(required_nodes) > 0:
                         if target_tile.data != {}:
