@@ -28,7 +28,6 @@ define([
         */
         initialize: function(options) {
             var self = this;
-            console.log(this)
             this.formid = options.formid;
             this.resourceid = options.resourceid;
             this.widgetLookup = widgets;
