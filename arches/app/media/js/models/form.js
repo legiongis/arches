@@ -53,6 +53,7 @@ define([
             self.dirty = ko.computed(function() {
                 return self.json() !== self._json();
             });
+            
         },
 
         parse: function(data) {

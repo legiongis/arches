@@ -182,6 +182,7 @@ class Card(models.CardModel):
         ret['widgets'] = self.widgets
         ret['is_editable'] = self.is_editable
         ret['ontologyproperty'] = self.ontologyproperty
+        ret['printable'] = self.printable
 
         if self.graph and self.graph.ontology and self.graph.isresource:
             edge = self.get_edge_to_parent()

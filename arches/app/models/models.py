@@ -43,6 +43,7 @@ class CardModel(models.Model):
     active = models.BooleanField(default=True)
     visible = models.BooleanField(default=True)
     sortorder = models.IntegerField(blank=True, null=True, default=None)
+    printable = models.BooleanField(default=False)
 
     @property
     def is_editable(self):

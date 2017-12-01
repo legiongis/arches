@@ -133,7 +133,10 @@ class ResourceEditorView(BaseManagerView):
                 context['nav']['help'] = (_('Managing System Settings'),'help/system-settings-help.htm')
             else:
                 context['nav']['help'] = (_('Using the Resource Editor'),'help/resource-editor-help.htm')
-
+            # print(context['resource_cards'])
+            # for k in resource_cards:
+            #     print(k)
+            print(forms_w_cards)
             return render(request, view_template, context)
 
         return HttpResponseNotFound()

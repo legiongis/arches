@@ -62,6 +62,8 @@ define(['arches',
                 return JSON.stringify(_.extend(JSON.parse(self._data()), self.toJSON())) !== self._data();
             });
 
+            console.log(this)
+
             this.configJSON = ko.computed({
                 read: function () {
                     var configJSON = {};

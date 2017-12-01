@@ -4,11 +4,17 @@
 <!-- ko let: {'isWizard': outerCard.isContainer() && outerCard.get('cardinality')() === 'n'} -->
 <!-- Card Manager Panels and Forms -->
 <div class="ep-card-crud-container" data-bind="visible: outerCard.get('visible')()">
-
     <div class="panel" style="padding-bottom: 10px; margin-bottom: 0px;">
         <div class="panel-heading">
-            <div class="">
+            <div class="col-md-10">
                 <h3 id="cc-title" class="panel-title card-main-title" data-bind="text: outerCard.get('name')"></h3>
+            </div>
+            <div data-bind="visible: outerCard.get('printable')()" class="col-md-2">
+                <button type="button" class="btn btn-lg" data-bind="click: function() { window.print() }">
+                    <div class="" data-placement="bottom" data-toggle="tooltip" data-original-title='{% trans "Print" %}'>
+                        Print Form <i class="ion-printer"></i>
+                    </div>
+                </button>
             </div>
         </div>
 
