@@ -213,21 +213,50 @@ def search_results(request):
         return HttpResponseNotFound(_("There was an error retrieving the search results"))
 
 def get_doc_type(request):
-    doc_type = set()
-    type_filter = request.GET.get('typeFilter', '')
-    if type_filter != '':
-        resource_model_ids = set(str(graphid) for graphid in models.GraphModel.objects.filter(isresource=True).values_list('graphid', flat=True))
-        for resouceTypeFilter in JSONDeserializer().deserialize(type_filter):
-            if resouceTypeFilter['inverted'] == True:
-                inverted_resource_model_ids = resource_model_ids - set([str(resouceTypeFilter['graphid'])])
-                if len(doc_type) > 0:
-                    doc_type = doc_type.intersection(inverted_resource_model_ids)
-                else:
-                    doc_type = inverted_resource_model_ids
-            else:
-                doc_type.add(str(resouceTypeFilter['graphid']))
 
-    return list(doc_type)
+    type_filter = request.GET.get('typeFilter', '')
+    use_ids = []
+
+    if type_filter != '':
+        type_filters = JSONDeserializer().deserialize(type_filter)
+        
+        ## add all positive filters to the list of good ids
+        pos_filters = [i['graphid'] for i in type_filters if not i['inverted']]
+        for pf in pos_filters:
+            use_ids.append(pf)
+        
+        ## if there are negative filters, make a list of all possible ids and
+        ## subtract the negative filter ids from it.
+        neg_filters = [i['graphid'] for i in type_filters if i['inverted']]
+        print neg_filters
+        if len(neg_filters) > 0:
+            all_rm_ids = models.GraphModel.objects.filter(isresource=True).values_list('graphid', flat=True)
+            use_ids = [str(i) for i in all_rm_ids if not str(i) in neg_filters]
+    else:
+        resource_models = models.GraphModel.objects.filter(isresource=True).values_list('graphid', flat=True)
+        use_ids = [str(i) for i in resource_models]
+
+    ## exclude doc ids if the user is a member of a group that is not allowed
+    ## to view them.
+    restricted_docs = []
+    restrictions = settings.GROUPS_BY_RESTRICED_RESOURCE_MODEL_IDS
+    
+    ## necessary because admin is a member of all groups
+    if request.user.is_superuser:
+        restrictions = {}
+    if restrictions:
+        user_groups = request.user.groups.values_list('name',flat=True)
+        restriction_groups = [i for i in user_groups if i in restrictions.keys()]
+        for group in restriction_groups:
+            for id in restrictions[group]:
+                restricted_docs.append(id)
+    
+    use_ids = [i for i in use_ids if not i in restricted_docs]
+    if len(use_ids) == 0:
+        ret = False
+    else:
+        ret = list(set(use_ids))
+    return ret
 
 def build_search_results_dsl(request):
     term_filter = request.GET.get('termFilter', '')
