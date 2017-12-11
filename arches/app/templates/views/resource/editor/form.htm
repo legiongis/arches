@@ -272,7 +272,7 @@
         <!-- start print template -->
         <script type="text/html" id="print-template">
             <!-- Card Print Template -->
-            <div class="tab-base outline" style="margin-bottom: 5px; margin-top: -2px;" data-bind="let: {'parentTile': $data}">
+            <div class="tab-base" style="margin-bottom: 5px; margin-top: -2px;" data-bind="let: {'parentTile': $data}">
                 
                 <!--Tabs Content-->
                 <div class="tab-content card-content-tab" style="margin-left: 0px;" data-bind="foreach: {
@@ -289,7 +289,7 @@
                     <!-- /ko -->
 
                     <!-- Card -->
-                    <div class="tab-pane fade" data-bind="css: {
+                    <div class="tab-pane" data-bind="css: {
                         'active in': 0 === 0
                     }">
 
@@ -405,13 +405,6 @@
 
                                 <div class="card-instructions">
                                     <span data-bind="text: card.get('instructions')"></span>
-
-                                    <!-- Help link -->
-                                    <!-- ko if: card.get('helpenabled') -->
-                                    <span>
-                                        <a class="pull-right card-help help editable-help" data-bind="click: function () { card.get('helpactive')(true) }" style="cursor:pointer;"> {% trans "Help" %} <i class="fa fa-question-circle"></i></a>
-                                    </span>
-                                    <!-- /ko -->
                                 </div>
 
                                 <!-- Form -->
@@ -441,61 +434,14 @@
                                                 "hidden": !tile.expanded() && form.expanded()
                                             }'></div>
                                         </form>
-
-
-
-                                        <!-- Save/Add Buttons -->
-                                        <!-- ko if: tile.dirty -->
-                                            <!-- ko if: forceBlank -->
-                                            <div class="install-buttons" data-bind="visible: card.get('cardinality')() === 'n', css: { 'expanded-buttons': tile.expanded() }" style="display: none;">
-                                                <button class="btn btn-shim btn-danger btn-labeled btn-lg fa fa-times" data-bind="click: form.cancelEdit.bind(form, parentTile)">{% trans "Cancel" %}</button>
-                                                <button class="btn btn-shim btn-mint btn-labeled btn-lg fa fa-plus" data-bind="click: form.saveTile.bind(form, parentTile, cardinality)">{% trans 'Add' %}</button>
-                                            </div>
-                                            <!-- ko if: card.get('cardinality')() === '1' ? parentTile.dirty(true): null -->
-                                            <!-- /ko -->
-                                            <!-- /ko -->
-
-                                            <!-- ko if: !forceBlank -->
-                                            <div class="install-buttons" data-bind="css: { 'expanded-buttons': tile.expanded() }">
-                                                <button class="btn btn-shim btn-danger btn-labeled btn-lg fa fa-times" data-bind="click: form.cancelEdit.bind(form, parentTile)">{% trans "Cancel" %}</button>
-                                                <button class="btn btn-shim btn-mint btn-labeled btn-lg fa fa-plus" data-bind="click: form.saveTile.bind(form, parentTile, cardinality)">{% trans "Save" %}</button>
-                                            </div>
-                                            <!-- /ko -->
-                                        <!-- /ko -->
-
-                                        <!-- ko if: !tile.dirty() -->
-                                        <!-- ko if: forceBlank -->
-                                        <!-- ko if: card.get('cardinality')() === '1' ? parentTile.dirty(false): null -->
-                                        <!-- /ko -->
-                                        <!-- /ko -->
                                         <!-- /ko -->
 
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-
-
-
-                        <aside id="card-help-panel" class="card-help-panel" style="display: none;" data-bind="visible: card.get('helpactive')">
-                            <div class="relative">
-                                <a id="add-basemap-wizard-help-close" href="#" class="help-close fa fa-times fa-lg" style="" data-bind="click: function () { card.get('helpactive')(false) }"></a>
-                            </div>
-                            <div id="add-basemap-wizard-help-content">
-                                <div>
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title help-panel-title" style="">
-                                            <span class="help-text-small">{% trans "Help" %}</span><span data-bind="html: card.get('helptitle')"></span>
-                                        </h3>
-                                    </div>
-                                    <div class="panel-body" style="padding: 10px 10px 15px 10px;" data-bind="html: card.get('helptext')">
-                                    </div>
-                                </div>
-                            </div>
-                        </aside>
-
                     </div>
+                    
 
                     <!-- /ko -->
 
@@ -510,7 +456,7 @@
             <!-- ko let: {'forceBlank': false} -->
             <!-- ko with: outerCard.get('cardinality')() === '1' ? (form.tiles[outerCard.get('nodegroup_id')]().length > 0 ? form.tiles[outerCard.get('nodegroup_id')]()[0] : form.blanks[outerCard.get('nodegroup_id')]()[0] ) : form -->
             <!-- Data Entry -->
-            <div class="panel-body card-body fade in" style="padding-top: 0px;" data-bind="template: { name: 'card-template'}"></div>
+            <div class="panel-body card-body fade in no-print" style="padding-top: 0px;" data-bind="template: { name: 'card-template'}"></div>
             <!-- /ko -->
             <!-- /ko -->
 
@@ -518,7 +464,7 @@
 
 
         <!-- ko if: isWizard -->
-        <div class="card-body panel-body ">
+        <div class="card-body panel-body">
 
             <div style="padding-bottom: 10px; display: none;" data-bind="visible: outerCard.get('cardinality')() === 'n' && form.tiles[outerCard.get('nodegroup_id')]().length > 0">
 
@@ -531,7 +477,7 @@
                 <!-- ko let: {'forceBlank': false} -->
                 <div class="tab-base wizard-tile-card" style="margin-bottom: 20px; margin-top: -2px;" data-bind="sortable: {data: form.tiles[outerCard.get('nodegroup_id')](), afterMove: form.reorderTiles.bind(form, form.tiles[outerCard.get('nodegroup_id')]()), as: 'tile', connectClass: 'wizard-tile-card', options: {'placeholder': 'ui-sortable-placeholder sortable-placeholder', forcePlaceholderSize: true}}">
                     <!-- Data Entry -->
-                    <div class="fade in" style="padding-top: 0px;" data-bind="template: { name: 'card-template' }"></div>
+                    <div class="fade in no-print" style="padding-top: 0px;" data-bind="template: { name: 'card-template' }"></div>
                 </div>
                 <!-- /ko -->
 
@@ -544,12 +490,12 @@
                 <div class="fade in no-print" style="padding-top: 0px;" data-bind="template: { name: 'card-template'}"></div>
 
 
-                <div class="print" style="padding-top: 0px;" data-bind="template: { name: 'print-template'}" hidden="true"></div>
+                <div class="print" style="padding-top: 0px;" data-bind="template: { name: 'print-template'}"></div>
 
 
                 <!-- Wizard Level Buttons -->
                 <!-- ko if: $data.dirty -->
-                <div class="ep-form-toolbar" style="background: transparent; border-bottom: none;">
+                <div class="ep-form-toolbar no-print" style="background: transparent; border-bottom: none;">
                     <div class="ep-form-toolbar-tools mar-no flex">
                         <span>
                             <button class="btn btn-danger btn-lg btn-labeled fa fa-trash" data-bind="click: form.clearTile.bind(form, $data)">{% trans "Discard" %}</button>
@@ -580,9 +526,7 @@
 
     function handlePrintCall(evt) {        
         var editor = document.getElementsByClassName('cke');
-        if (evt.matches) {            
-            // var content = document.getElementsByClassName("print");
-            // console.log(content[0].children[0].children[0].children);
+        if (evt.matches) {
             for (index = 0; index < editor.length; index++) {
                 e = editor[index].parentElement.children;
                 e[0].style.display = "block"; 

@@ -8841,6 +8841,12 @@ a.search-facet-item.disabled {
     }
 }
 
+@media all {
+    .print, .page-break {
+        display: none;
+    }
+}
+
 @media (min-width: 992px) {
     #page-content {
         padding: 15px 15px 25px;
@@ -9031,7 +9037,20 @@ a.search-facet-item.disabled {
     .print {
         display: block;
         visibility: visible;
-        height:100%;
+        font-size: 15px;
+    }
+    .print textarea {
+        max-width: 620px;
+    }
+    .tab-pane {
+        page-break-after: always;
+    }
+    .tab-pane:last-child {
+        page-break-after: auto;
+    }
+    #container, .card-form-preview-container {
+        overflow: visible;
+        min-width: 670px !important;
     }
     input::-webkit-input-placeholder {
         color: transparent !important;
