@@ -257,6 +257,20 @@ class Terms(Dsl):
             }
         }
 
+class Type(Dsl):
+    """
+    https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-type-query.html
+
+    """
+
+    def __init__(self, **kwargs):
+        self.type = kwargs.pop('type','')
+
+        self.dsl = {
+            'type' : {
+                'value' : self.type
+            }
+        }
 
 class GeoShape(Dsl):
     """
