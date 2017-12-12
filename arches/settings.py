@@ -61,7 +61,17 @@ PACKAGE_NAME = PACKAGE_ROOT.split(os.sep)[-1]
 RESOURCE_IMPORT_LOG = 'arches/logs/resource_import.log'
 
 GROUPS_BY_RESTRICED_RESOURCE_MODEL_IDS = {
-    #'name of group':'resource model uuid to hide from this group'
+    #'<name of group>':'<resource model uuid to hide from this group>'
+}
+
+## basic example of 
+RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS = {
+    # 'resource model uuid': {
+       # 'default': {
+            # 'node_name':'<name of node to check>',
+            # 'value':'<value to test against>'
+        # },
+    # }
 }
 
 RESOURCE_FORMATERS = {
