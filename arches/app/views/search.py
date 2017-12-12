@@ -304,7 +304,7 @@ def get_doc_type(request):
     ## exclude doc ids if the user is a member of a group that is not allowed
     ## to view them.
     restricted_docs = []
-    restrictions = settings.GROUPS_BY_RESTRICED_RESOURCE_MODEL_IDS
+    restrictions = settings.GROUPS_BY_RESTRICTED_RESOURCE_MODEL_IDS
     
     ## necessary because admin is a member of all groups
     if request.user.is_superuser:

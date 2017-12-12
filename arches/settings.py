@@ -60,7 +60,7 @@ PACKAGE_ROOT = ROOT_DIR
 PACKAGE_NAME = PACKAGE_ROOT.split(os.sep)[-1]
 RESOURCE_IMPORT_LOG = 'arches/logs/resource_import.log'
 
-GROUPS_BY_RESTRICED_RESOURCE_MODEL_IDS = {
+GROUPS_BY_RESTRICTED_RESOURCE_MODEL_IDS = {
     #'<name of group>':'<resource model uuid to hide from this group>'
 }
 
