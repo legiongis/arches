@@ -37,7 +37,7 @@ from arches.app.utils.JSONResponse import JSONResponse
 from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
 from arches.app.utils.date_utils import SortableDate
 from arches.app.search.search_engine_factory import SearchEngineFactory
-from arches.app.search.elasticsearch_dsl_builder import Bool, Match, Query, Nested, Term, Terms, GeoShape, Range, MinAgg, MaxAgg, RangeAgg, Aggregation, GeoHashGridAgg, GeoBoundsAgg, FiltersAgg, NestedAgg
+from arches.app.search.elasticsearch_dsl_builder import Bool, Match, Query, Nested, Term, Terms, GeoShape, Range, MinAgg, MaxAgg, RangeAgg, Aggregation, GeoHashGridAgg, GeoBoundsAgg, FiltersAgg, NestedAgg, Type
 from arches.app.utils.data_management.resources.exporter import ResourceExporter
 from arches.app.views.base import BaseManagerView
 from arches.app.views.concept import get_preflabel_from_conceptid
@@ -157,6 +157,36 @@ def search_terms(request):
             i = i + 1
 
     return JSONResponse(ret)
+    
+def add_doc_specific_criterion(dsl,spec_type,all_types,node_name,value):
+
+    paramount = Bool()
+    for doc_type in all_types:
+
+        ## add special string filter for specified node in type
+        if doc_type == spec_type:
+            node = models.Node.objects.filter(graph_id=spec_type,name=node_name)
+            if len(node) == 1:
+                nodegroup = str(node[0].nodegroup_id)
+            else:
+                nodegroup = ""
+                print "error finding specified node '{}', criterion ignored".format(node_name)
+                return dsl
+                
+            new_string_filter = Bool()
+            new_string_filter.must(Match(field='strings.string', query=value, type='phrase'))
+            new_string_filter.filter(Terms(field='strings.nodegroup_id', terms=[nodegroup]))
+            nested = Nested(path='strings', query=new_string_filter)
+            paramount.should(nested)
+        
+        ## add good types
+        else:
+            paramount.should(Type(type=doc_type))
+
+    dsl.add_query(paramount)
+    
+    return dsl
+    
 
 def search_results(request):
     search_results_dsl = build_search_results_dsl(request)
@@ -171,7 +201,42 @@ def search_results(request):
     dsl.include('displaydescription')
     dsl.include('map_popup')
 
-    results = dsl.search(index='resource', doc_type=get_doc_type(request))
+    doc_types = get_doc_type(request)
+    
+    instance_perms_needed = False
+    if doc_types:
+        if [i for i in doc_types if i in settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS.keys()]:
+            instance_perms_needed = True
+            
+    ## hard-code super users to not have any retrictions. this is just
+    ## to improve performance in the case where there admins should be
+    ## allowed to see everything. comment this out if admins should be
+    ## subjected to the same restrictions as others.
+    if request.user.is_superuser:
+        instance_perms_needed = False
+   
+    if instance_perms_needed:
+        for doc in doc_types:
+            if doc in settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS.keys():
+                details = settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS[doc].get('default',None)
+                if not details:
+                    print "error finding ['default'] info for this resource model:{}".format(node_name,doc)
+                    continue
+                    
+                ## FPAN tests that should be non-breaking in other environments
+                # try:
+                from fpan.utils.accounts import get_perm_details
+                details = get_perm_details(request,doc)
+                if not details:
+                    break
+                # except ImportError:
+                pass
+                    
+                print "applying specific query to",doc,details
+                dsl = add_doc_specific_criterion(dsl,doc,doc_types,details['node_name'],details['value'])
+                break
+
+    results = dsl.search(index='resource', doc_type=doc_types)
 
     if results is not None:
         total = results['hits']['total']
@@ -239,7 +304,7 @@ def get_doc_type(request):
     ## exclude doc ids if the user is a member of a group that is not allowed
     ## to view them.
     restricted_docs = []
-    restrictions = settings.GROUPS_BY_RESTRICED_RESOURCE_MODEL_IDS
+    restrictions = settings.GROUPS_BY_RESTRICTED_RESOURCE_MODEL_IDS
     
     ## necessary because admin is a member of all groups
     if request.user.is_superuser:
