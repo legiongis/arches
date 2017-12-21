@@ -158,23 +158,27 @@ def search_terms(request):
 
     return JSONResponse(ret)
     
-def add_doc_specific_criterion(dsl,spec_type,all_types,node_name,value):
+def add_doc_specific_criterion(dsl,spec_type,all_types,criterion={}):
+
+    ## if there is no criterion to add, return original dsl
+    if not criterion:
+        return dsl
 
     paramount = Bool()
     for doc_type in all_types:
 
         ## add special string filter for specified node in type
         if doc_type == spec_type:
-            node = models.Node.objects.filter(graph_id=spec_type,name=node_name)
+            node = models.Node.objects.filter(graph_id=spec_type,name=criterion['node_name'])
             if len(node) == 1:
                 nodegroup = str(node[0].nodegroup_id)
             else:
                 nodegroup = ""
-                print "error finding specified node '{}', criterion ignored".format(node_name)
+                print "error finding specified node '{}', criterion ignored".format(criterion['node_name'])
                 return dsl
                 
             new_string_filter = Bool()
-            new_string_filter.must(Match(field='strings.string', query=value, type='phrase'))
+            new_string_filter.must(Match(field='strings.string', query=criterion['value'], type='phrase'))
             new_string_filter.filter(Terms(field='strings.nodegroup_id', terms=[nodegroup]))
             nested = Nested(path='strings', query=new_string_filter)
             paramount.should(nested)
@@ -203,38 +207,25 @@ def search_results(request):
 
     doc_types = get_doc_type(request)
     
-    instance_perms_needed = False
-    if doc_types:
-        if [i for i in doc_types if i in settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS.keys()]:
-            instance_perms_needed = True
+    for doc in doc_types:
+        try:
+            details = settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS[doc]['default']
+        except KeyError:
+            print "error finding ['default'] perm details for this resource model:{}".format(doc)
+            continue
+        
+        ## special FPAN acquisition of criterion
+        try:
+            from fpan.utils.accounts import get_perm_details
+            details = get_perm_details(request.user,doc)
+            if not details:
+                continue
+        except ImportError:
+            pass
             
-    ## hard-code super users to not have any retrictions. this is just
-    ## to improve performance in the case where there admins should be
-    ## allowed to see everything. comment this out if admins should be
-    ## subjected to the same restrictions as others.
-    if request.user.is_superuser:
-        instance_perms_needed = False
-   
-    if instance_perms_needed:
-        for doc in doc_types:
-            if doc in settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS.keys():
-                details = settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS[doc].get('default',None)
-                if not details:
-                    print "error finding ['default'] info for this resource model:{}".format(node_name,doc)
-                    continue
-                    
-                ## FPAN tests that should be non-breaking in other environments
-                # try:
-                from fpan.utils.accounts import get_perm_details
-                details = get_perm_details(request,doc)
-                if not details:
-                    break
-                # except ImportError:
-                pass
-                    
-                print "applying specific query to",doc,details
-                dsl = add_doc_specific_criterion(dsl,doc,doc_types,details['node_name'],details['value'])
-                break
+        print "applying specific query to",doc,details
+        dsl = add_doc_specific_criterion(dsl,doc,doc_types,criterion=details)
+
 
     results = dsl.search(index='resource', doc_type=doc_types)
 
