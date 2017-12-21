@@ -68,6 +68,15 @@ def get_resource_relationship_types():
 class ResourceEditorView(BaseManagerView):
     action = None
     def get(self, request, graphid=None, resourceid=None, view_template='views/resource/editor.htm', main_script='views/resource/editor', nav_menu=True):
+        
+        try:
+            from django.http import Http404
+            from fpan.utils.accounts import user_can_edit_resource_instance
+            if not user_can_edit_resource_instance(request.user,resourceid):
+                raise Http404
+        except ImportError:
+            pass
+        
         if self.action == 'copy':
             return self.copy(request, resourceid)
 
