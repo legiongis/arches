@@ -169,6 +169,12 @@ def add_doc_specific_criterion(dsl,spec_type,all_types,criterion={}):
 
         ## add special string filter for specified node in type
         if doc_type == spec_type:
+        
+            ## if no_access is the permission level for the user, exclude doc
+            if criterion == 'no_access':
+                paramount.must_not(Type(type=doc_type))
+                continue
+
             node = models.Node.objects.filter(graph_id=spec_type,name=criterion['node_name'])
             if len(node) == 1:
                 nodegroup = str(node[0].nodegroup_id)
@@ -190,7 +196,6 @@ def add_doc_specific_criterion(dsl,spec_type,all_types,criterion={}):
     dsl.add_query(paramount)
     
     return dsl
-    
 
 def search_results(request):
     search_results_dsl = build_search_results_dsl(request)
@@ -205,27 +210,30 @@ def search_results(request):
     dsl.include('displaydescription')
     dsl.include('map_popup')
 
-    doc_types = get_doc_type(request)
+    docs_perms = settings.RESOURCE_MODEL_USER_RESTRICTIONS
     
+    doc_types = get_doc_type(request)
     for doc in doc_types:
-        try:
-            details = settings.RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS[doc]['default']
-        except KeyError:
-            print "error finding ['default'] perm details for this resource model:{}".format(doc)
+        if not doc in docs_perms.keys() or not 'default' in docs_perms[doc].keys():
+            print "no ['default'] permissions for this resource model:{}".format(doc)
+            continue
+            
+        level = docs_perms[doc]['default']['level']
+        if level == "no_access":
+            filter = "no_access"
+        elif level == "term_filter":
+            filter = docs_perms[doc]['default']['term_filter']
+        else:
             continue
         
         ## special FPAN acquisition of criterion
         try:
             from fpan.utils.accounts import get_perm_details
-            details = get_perm_details(request.user,doc)
-            if not details:
-                continue
+            filter = get_perm_details(request.user,doc)
         except ImportError:
             pass
-            
-        print "applying specific query to",doc,details
-        dsl = add_doc_specific_criterion(dsl,doc,doc_types,criterion=details)
 
+        dsl = add_doc_specific_criterion(dsl,doc,doc_types,criterion=filter)
 
     results = dsl.search(index='resource', doc_type=doc_types)
 
@@ -284,32 +292,16 @@ def get_doc_type(request):
         ## if there are negative filters, make a list of all possible ids and
         ## subtract the negative filter ids from it.
         neg_filters = [i['graphid'] for i in type_filters if i['inverted']]
-        print neg_filters
         if len(neg_filters) > 0:
             all_rm_ids = models.GraphModel.objects.filter(isresource=True).values_list('graphid', flat=True)
             use_ids = [str(i) for i in all_rm_ids if not str(i) in neg_filters]
+
     else:
         resource_models = models.GraphModel.objects.filter(isresource=True).values_list('graphid', flat=True)
         use_ids = [str(i) for i in resource_models]
 
-    ## exclude doc ids if the user is a member of a group that is not allowed
-    ## to view them.
-    restricted_docs = []
-    restrictions = settings.GROUPS_BY_RESTRICTED_RESOURCE_MODEL_IDS
-    
-    ## necessary because admin is a member of all groups
-    if request.user.is_superuser:
-        restrictions = {}
-    if restrictions:
-        user_groups = request.user.groups.values_list('name',flat=True)
-        restriction_groups = [i for i in user_groups if i in restrictions.keys()]
-        for group in restriction_groups:
-            for id in restrictions[group]:
-                restricted_docs.append(id)
-    
-    use_ids = [i for i in use_ids if not i in restricted_docs]
     if len(use_ids) == 0:
-        ret = False
+        ret = []
     else:
         ret = list(set(use_ids))
     return ret
@@ -440,9 +432,7 @@ def build_search_results_dsl(request):
                 temporal_query.should(Nested(path='date_ranges', query=date_ranges_query))
             temporal_query.should(Nested(path='dates', query=date_query))
 
-
         search_query.filter(temporal_query)
-        #print search_query.dsl
 
     datatype_factory = DataTypeFactory()
     if len(advanced_filters) > 0:

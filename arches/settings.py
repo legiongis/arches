@@ -60,17 +60,22 @@ PACKAGE_ROOT = ROOT_DIR
 PACKAGE_NAME = PACKAGE_ROOT.split(os.sep)[-1]
 RESOURCE_IMPORT_LOG = 'arches/logs/resource_import.log'
 
-GROUPS_BY_RESTRICTED_RESOURCE_MODEL_IDS = {
-    #'<name of group>':'<resource model uuid to hide from this group>'
-}
-
-## basic example of 
-RESTRICTED_RESOURCE_MODEL_IDS_BY_NODE_PERMS = {
-    # 'resource model uuid': {
-       # 'default': {
-            # 'node_name':'<name of node to check>',
-            # 'value':'<value to test against>'
-        # },
+## basic example of restriction specific resources models from certain users
+## 'default' is used for non-authenticated users
+## acceptable values for 'level' are 'no_access' to hide the resource model
+## completely, and 'filtered' to apply a term_filter to this resource model.
+## if 'level':'filtered', then 'term_filter' must have the name of a node
+## that exists in the resource model and a value to look for in that node.
+## users will only see resources that match the criterion.
+RESOURCE_MODEL_USER_RESTRICTIONS = {
+    # '<insert resource model uuid>': {
+        # 'default': {
+            # 'level': '<"no_access" or "filtered">',
+            # 'term_filter': {
+                # 'node_name':'<insert name of node>',
+                # 'value':'<insert string value to test>'
+            # }
+        # }
     # }
 }
 
