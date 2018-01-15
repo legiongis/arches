@@ -63,14 +63,14 @@ RESOURCE_IMPORT_LOG = 'arches/logs/resource_import.log'
 ## basic example of restriction specific resources models from certain users
 ## 'default' is used for non-authenticated users
 ## acceptable values for 'level' are 'no_access' to hide the resource model
-## completely, and 'filtered' to apply a term_filter to this resource model.
-## if 'level':'filtered', then 'term_filter' must have the name of a node
+## completely, and 'term_filter' to apply a term_filter to this resource model.
+## if 'level':'term_filter', then 'term_filter' must have the name of a node
 ## that exists in the resource model and a value to look for in that node.
 ## users will only see resources that match the criterion.
 RESOURCE_MODEL_USER_RESTRICTIONS = {
     # '<insert resource model uuid>': {
         # 'default': {
-            # 'level': '<"no_access" or "filtered">',
+            # 'level': '<"no_access" or "term_filter">',
             # 'term_filter': {
                 # 'node_name':'<insert name of node>',
                 # 'value':'<insert string value to test>'
