@@ -226,75 +226,79 @@ define([
             if(tileHasParent){
                 tile.parenttile_id(parentTile.tileid());
             }
+            
+            // the following lines have been modified to force the save of n-n
+            // tiles within a card container. this is necessary for file upload
+            // to work within a card container in the n-n context.
+            // this may lead to some unintended consequences, but it was
+            // necessary for the FPAN project.
             if(cardinality === 'n-n' && !parentTile.tileid()){
                 parentTile.dirty(true);
-                tiles.push(this.initTile(koMapping.fromJS(ko.toJS(tile))));
-                this.clearTile(tile);
-            }else{
-                var model;
-                var savingParentTile = false;
-                var updatingTile = false;
-                if(tileHasParent && !parentTile.tileid()){
-                    savingParentTile = true;
-                }
-                if(cardinality === '1-' || cardinality === '1-1' || cardinality === 'n-1' ||
-                  (cardinality === 'n-n' && !!tile.tileid()) ||
-                  (cardinality === 'n-' && !!tile.tileid()) ||
-                  (cardinality === '1-n' && !!tile.tileid())){
-                    updatingTile = true;
-                }
-
-                // console.log('cardinality: ' + cardinality)
-                // console.log('savingParentTile: ' + savingParentTile)
-                // console.log('updatingTile: ' + updatingTile)
-
-                // if the parentTile has never been saved then we need to save it instead, else just save the inner tile
-                if(savingParentTile){
-                    var tilemodel = {};
-                    tilemodel[tile.nodegroup_id()] = [koMapping.toJS(tile)];
-                    model = new TileModel(koMapping.toJS(parentTile));
-                    model.set('tiles', tilemodel);
-                }else{
-                    model = new TileModel(koMapping.toJS(tile))
-                }
-                this.trigger('before-update');
-                model.save(function(response, status, model){
-                    if(response.status === 200){
-                        // if we had to save a parentTile
-                        // console.log(response.responseJSON)
-                        if(updatingTile){
-                            var updatedTileData;
-                            if(savingParentTile){
-                                if(response.responseJSON.tiles[tile.nodegroup_id()].length > 1){
-                                    throw('Error: tile has multiple parents');
-                                }
-                                parentTile.tileid(response.responseJSON.tileid);
-                                updatedTileData = response.responseJSON.tiles[tile.nodegroup_id()][0];
-
-                            }else{
-                                updatedTileData = response.responseJSON;
-                            }
-
-                            tile.tileid(updatedTileData.tileid);
-                            tile.parenttile_id(updatedTileData.parenttile_id);
-                            if(!!tile._data()){
-                                tile._data(JSON.stringify(updatedTileData.data));
-                            }
-                        }else{
-                            if(savingParentTile){
-                                parentTile.tileid(response.responseJSON.tileid);
-                                response.responseJSON.tiles[tile.nodegroup_id()].forEach(function(tile){
-                                    parentTile.tiles[tile.nodegroup_id].push(this.initTile(koMapping.fromJS(tile)));
-                                }, this);
-                            }else{
-                                tiles.push(this.initTile(koMapping.fromJS(response.responseJSON)));
-                            }
-                            this.clearTile(tile);
-                        }
-                    }
-                    this.trigger('after-update', response, tile);
-                }, this, tile.formData);
             }
+            
+            var model;
+            var savingParentTile = false;
+            var updatingTile = false;
+            if(tileHasParent && !parentTile.tileid()){
+                savingParentTile = true;
+            }
+            if(cardinality === '1-' || cardinality === '1-1' || cardinality === 'n-1' ||
+              (cardinality === 'n-n' && !!tile.tileid()) ||
+              (cardinality === 'n-' && !!tile.tileid()) ||
+              (cardinality === '1-n' && !!tile.tileid())){
+                updatingTile = true;
+            }
+
+            // console.log('cardinality: ' + cardinality)
+            // console.log('savingParentTile: ' + savingParentTile)
+            // console.log('updatingTile: ' + updatingTile)
+
+            // if the parentTile has never been saved then we need to save it instead, else just save the inner tile
+            if(savingParentTile){
+                var tilemodel = {};
+                tilemodel[tile.nodegroup_id()] = [koMapping.toJS(tile)];
+                model = new TileModel(koMapping.toJS(parentTile));
+                model.set('tiles', tilemodel);
+            }else{
+                model = new TileModel(koMapping.toJS(tile))
+            }
+            this.trigger('before-update');
+            model.save(function(response, status, model){
+                if(response.status === 200){
+                    // if we had to save a parentTile
+                    // console.log(response.responseJSON)
+                    if(updatingTile){
+                        var updatedTileData;
+                        if(savingParentTile){
+                            if(response.responseJSON.tiles[tile.nodegroup_id()].length > 1){
+                                throw('Error: tile has multiple parents');
+                            }
+                            parentTile.tileid(response.responseJSON.tileid);
+                            updatedTileData = response.responseJSON.tiles[tile.nodegroup_id()][0];
+
+                        }else{
+                            updatedTileData = response.responseJSON;
+                        }
+
+                        tile.tileid(updatedTileData.tileid);
+                        tile.parenttile_id(updatedTileData.parenttile_id);
+                        if(!!tile._data()){
+                            tile._data(JSON.stringify(updatedTileData.data));
+                        }
+                    }else{
+                        if(savingParentTile){
+                            parentTile.tileid(response.responseJSON.tileid);
+                            response.responseJSON.tiles[tile.nodegroup_id()].forEach(function(tile){
+                                parentTile.tiles[tile.nodegroup_id].push(this.initTile(koMapping.fromJS(tile)));
+                            }, this);
+                        }else{
+                            tiles.push(this.initTile(koMapping.fromJS(response.responseJSON)));
+                        }
+                        this.clearTile(tile);
+                    }
+                }
+                this.trigger('after-update', response, tile);
+            }, this, tile.formData);
         },
 
 
