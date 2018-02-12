@@ -48,6 +48,23 @@ def handle_request(request):
     script_name = ""
     response = HttpResponse()
 
+    ## restricting access to the tileserver resource overlays for all but
+    ## those who are members of the correct groups (or superusers)
+    try:
+        node = models.Node.objects.get(pk=layer_id)
+        gid = str(node.graph_id)
+    except DoesNotExist:
+        gid = None
+
+    if gid in settings.TILESERVER_RESTRICTION_BY_GRAPH.keys():
+        allowed_groups = settings.TILESERVER_RESTRICTION_BY_GRAPH[gid]['allowed_groups']
+        access = request.user.groups.filter(name__in=allowed_groups).exists()
+        if request.user.is_superuser:
+            access = True
+        if not access:
+            response.status_code = 404
+            return response
+
     try:
         status_code, headers, content = TileStache.requestHandler2(
             config, path_info, query_string, script_name)

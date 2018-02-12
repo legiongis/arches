@@ -79,6 +79,16 @@ RESOURCE_MODEL_USER_RESTRICTIONS = {
     # }
 }
 
+## separate variable to restrict certain user groups from viewing the tileserver
+## layers for certain resource models. this is referenced in views/tileserver.py
+TILESERVER_RESTRICTION_BY_GRAPH = {
+    '<insert resource model uuid>': {
+        'allowed_groups': [
+            '<names of groups who are ALLOWED to view geometries from the resource model>'
+        ]
+    }
+}
+
 RESOURCE_FORMATERS = {
     'csv': 'arches.app.utils.data_management.resources.formats.csvfile.CsvWriter',
     'json': 'arches.app.utils.data_management.resources.formats.archesjson.JsonWriter',
