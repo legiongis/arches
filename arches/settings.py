@@ -89,6 +89,10 @@ TILESERVER_RESTRICTION_BY_GRAPH = {
     }
 }
 
+## the display name of a menu that should be printable (only supporting one
+## name at this time, though undoubtedly it should be a list...)
+MENUS_TO_PRINT = ''
+
 RESOURCE_FORMATERS = {
     'csv': 'arches.app.utils.data_management.resources.formats.csvfile.CsvWriter',
     'json': 'arches.app.utils.data_management.resources.formats.archesjson.JsonWriter',

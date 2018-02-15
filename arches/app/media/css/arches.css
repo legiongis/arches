@@ -8971,6 +8971,12 @@ a.search-facet-item.disabled {
     }
 }
 
+@media all {
+    .print, .page-break {
+        display: none;
+    }
+}
+
 @media print {
     header,
     nav,
@@ -9026,4 +9032,34 @@ a.search-facet-item.disabled {
         width: 100%;
         height: 100%;
     }
+    
+    .no-print {
+        display: none;
+    }
+    .print {
+        display: block;
+        visibility: visible;
+        height:100%;
+    }
+    .print textarea {
+        max-width: 620px;
+    }
+    .tab-pane {
+        page-break-after: auto;
+    }
+    /* .tab-pane:last-child { */
+        /* page-break-after: auto; */
+    /* } */
+    #container, .card-form-preview-container {
+        overflow: visible;
+        min-width: 670px !important;
+    }
+    input::-webkit-input-placeholder {
+        color: transparent !important;
+    }
+    
+    .ep-card-crud-container {
+        margin-bottom: 0px;
+    }
+    html {zoom: 65%;} 
 }
