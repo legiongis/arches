@@ -38,7 +38,7 @@ define([
                         offsetX: 5,
                         offsetY: ((iconSize/2)*-1)-5,
                         fill: new ol.style.Fill({
-                            color: 'rgba(126,126,126,0.3)',
+                            color: 'rgba(126,126,126,0)',
                         })
                     }),
                     zIndex: mouseOver ? zIndex*1000000000: zIndex
@@ -127,7 +127,7 @@ define([
                             width: radius
                         }),
                         fill: new ol.style.Fill({
-                            color: 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0.8)',
+                            color: 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',0)',
                         })
                     }),
                     text: new ol.style.Text({
