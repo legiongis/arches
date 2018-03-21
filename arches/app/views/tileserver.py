@@ -53,7 +53,7 @@ def handle_request(request):
     try:
         node = models.Node.objects.get(pk=layer_id)
         gid = str(node.graph_id)
-    except DoesNotExist:
+    except:
         gid = None
 
     if gid in settings.TILESERVER_RESTRICTION_BY_GRAPH.keys():
