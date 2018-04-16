@@ -264,6 +264,15 @@ class ResourceDescriptors(View):
 
 class ResourceReportView(BaseManagerView):
     def get(self, request, resourceid=None):
+    
+        try:
+            from django.http import Http404
+            from fpan.utils.accounts import user_can_edit_resource_instance
+            if not user_can_edit_resource_instance(request.user,resourceid):
+                raise Http404
+        except ImportError:
+            pass
+            
         lang = request.GET.get('lang', settings.LANGUAGE_CODE)
         resource_instance = models.ResourceInstance.objects.get(pk=resourceid)
         resource = Resource.objects.get(pk=resourceid)
