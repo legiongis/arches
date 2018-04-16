@@ -7,12 +7,12 @@
 
     <div class="panel" style="padding-bottom: 10px; margin-bottom: 0px;">
         <div class="panel-heading">
-            <div class="col-md-9">
+            <div class="col-xs-6 col-md-9">
                  <h3 id="cc-title" class="panel-title card-main-title" data-bind="text: outerCard.get('name')"></h3>
             </div>
             
             <!-- ko if: outerCard.attributes.name() === '{{printable_menu_names}}' -->
-            <div class="col-md-3 no-print">
+            <div class="col-xs-6 col-md-3 no-print">
                 <button type="button" class="btn btn-lg" data-bind="click: function() { window.print() }">
                     <div class="" data-placement="bottom" data-toggle="tooltip" data-original-title='{% trans "Print" %}'>
                         Print Assessment Form <i class="ion-printer"></i>
