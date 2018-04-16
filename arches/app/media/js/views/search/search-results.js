@@ -167,11 +167,11 @@ define(['jquery',
             },
 
             viewReport: function(resourceinstance){
-                window.open(arches.urls.resource_report + resourceinstance.resourceinstanceid);
+                window.open(arches.urls.resource_report + resourceinstance.resourceinstanceid,"_self");
             },
 
             editResource: function(resourceinstance){
-                window.open(arches.urls.resource_editor + resourceinstance.resourceinstanceid);
+                window.open(arches.urls.resource_editor + resourceinstance.resourceinstanceid,"_self");
             },
 
             zoomToFeature: function(evt){
