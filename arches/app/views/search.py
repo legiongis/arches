@@ -187,7 +187,7 @@ def add_doc_specific_criterion(dsl,spec_type,all_types,criterion={}):
             new_string_filter.must(Match(field='strings.string', query=criterion['value'], type='phrase'))
             new_string_filter.filter(Terms(field='strings.nodegroup_id', terms=[nodegroup]))
             nested = Nested(path='strings', query=new_string_filter)
-            paramount.should(nested)
+            paramount.must(nested)
         
         ## add good types
         else:
@@ -232,7 +232,6 @@ def search_results(request):
             filter = get_perm_details(request.user,doc)
         except ImportError:
             pass
-
         dsl = add_doc_specific_criterion(dsl,doc,doc_types,criterion=filter)
 
     results = dsl.search(index='resource', doc_type=doc_types)
