@@ -187,7 +187,20 @@ def add_doc_specific_criterion(dsl,spec_type,all_types,criterion={}):
             new_string_filter.must(Match(field='strings.string', query=criterion['value'], type='phrase'))
             new_string_filter.filter(Terms(field='strings.nodegroup_id', terms=[nodegroup]))
             nested = Nested(path='strings', query=new_string_filter)
-            paramount.must(nested)
+            
+            ## manual test to see if any criteria have been added to the query yet
+            f = dsl._dsl['query']['bool']['filter']
+            m = dsl._dsl['query']['bool']['must']
+            mn = dsl._dsl['query']['bool']['must_not']
+            s = dsl._dsl['query']['bool']['should']
+            
+            ## if they have, then the new statement needs to be MUST
+            if f or m or mn or s:
+                paramount.must(nested)
+                
+            ## otherwise, use SHOULD
+            else:
+                paramount.should(nested)
         
         ## add good types
         else:
