@@ -7,6 +7,12 @@ unicodecsv==0.9.4
 pyyaml==3.11
 pyshp==1.2.1
 
+## adding as necessary 4-20-18 -AC
+psycopg2==2.7.4
+reportlab==3.4
+geojson==2.3.0
+Shapely==1.6
+
 # Leave the following line commented so that pip install will ignore this
 # The installer uses the following line to download the proper version of ES
 # https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.1.zip
