@@ -939,6 +939,101 @@ class FeatureConditionAssessmentForm(ResourceForm):
                     'OVERALL_CONDITION_REMARKS_TYPE.E55' : Concept().get_e55_domain('OVERALL_CONDITION_REMARKS_TYPE.E55')
                 }
             }
+            
+class ComponentConditionAssessmentForm(ResourceForm):
+    
+    @staticmethod
+    def get_info():
+        return {
+            'id': 'condition-assessment-component',
+            'icon': 'fa-adjust',
+            'name': _('Condition Assessment'),
+            'class': ComponentConditionAssessmentForm
+        }
+
+    def update_nodese(self, entitytypeid, data):
+        self.baseentity = None
+        if self.schema == None:
+            self.schema = Entity.get_mapping_schema(self.resource.entitytypeid)
+
+        for value in data[entitytypeid]:
+            if entitytypeid == 'CONDITION_ASSESSMENT_IMAGE.E38':
+                temp = None
+                for newentity in value['nodes']:
+                    if newentity['entitytypeid'] != 'CONDITION_ASSESSMENT_IMAGE.E38':
+                        entity = Entity()
+                        entity.create_from_mapping(self.resource.entitytypeid, self.schema[newentity['entitytypeid']]['steps'], newentity['entitytypeid'], newentity['value'], newentity['entityid'])
+
+                        if temp == None:
+                            temp = entity
+                        else:
+                            temp.merge(entity)
+
+                newentity.merge_at(temp, 'CONDITION_ASSESSMENT.E14')
+            else:
+                for newentity in value['nodes']:
+                    entity = Entity()
+                    entity.create_from_mapping(self.resource.entitytypeid, self.schema[newentity['entitytypeid']]['steps'], newentity['entitytypeid'], newentity['value'], newentity['entityid'])
+
+                    if self.baseentity == None:
+                        self.baseentity = entity
+                    else:
+                        self.baseentity.merge(entity)
+
+    def update(self, data, files):
+
+        ## step 1
+        self.update_nodes('DAMAGE_STATE.E3',data)
+        
+        ## step 2
+        self.update_nodes('CONDITION_ASSESSMENT_IMAGE.E38',data)
+        
+        ## step 3
+        self.update_nodes('THREAT_INFERENCE_MAKING.I5',data)
+        
+        ## step 4
+        self.update_nodes('ACTIVITY_PLAN.E100',data)
+
+    def load(self, lang):
+        if self.resource:
+            self.data['DAMAGE_STATE.E3'] = {
+                'branch_lists': datetime_nodes_to_dates(exclude_empty_branches(self.get_nodes('DAMAGE_STATE.E3'), 'ACTIVITY_PLAN.E100')),
+                'domains': {
+                    'DISTURBANCE_CAUSE_CATEGORY_TYPE.E55' : Concept().get_e55_domain('DISTURBANCE_CAUSE_CATEGORY_TYPE.E55'),
+                    'DISTURBANCE_CAUSE_TYPE.I4' : Concept().get_e55_domain('DISTURBANCE_CAUSE_TYPE.I4'),
+                    'DISTURBANCE_CAUSE_CERTAINTY.I6' : Concept().get_e55_domain('DISTURBANCE_CAUSE_CERTAINTY.I6'),
+                    'EFFECT_TYPE.S9' : Concept().get_e55_domain('EFFECT_TYPE.S9'),
+                    'DAMAGE_TREND_TYPE.E55' : Concept().get_e55_domain('DAMAGE_TREND_TYPE.E55'),
+                    'DAMAGE_SEVERITY_TYPE.E55' : Concept().get_e55_domain('DAMAGE_SEVERITY_TYPE.E55'),
+                    'DAMAGE_EXTENT_TYPE.E55' : Concept().get_e55_domain('DAMAGE_EXTENT_TYPE.E55'),
+                }
+            }
+            
+            self.data['CONDITION_ASSESSMENT_IMAGE.E38'] = {
+                'branch_lists': datetime_nodes_to_dates(self.get_nodes('CONDITION_ASSESSMENT_IMAGE.E38')),
+                'domains': {
+                    'CONDITION_ASSESSMENT_IMAGE_RIGHT_TYPE.E55' : Concept().get_e55_domain('CONDITION_ASSESSMENT_IMAGE_RIGHT_TYPE.E55'),
+                }                
+            }
+            
+            self.data['THREAT_INFERENCE_MAKING.I5'] = {
+                'branch_lists': self.get_nodes('THREAT_INFERENCE_MAKING.I5'),
+                'domains': {
+                    'THREAT_PROBABILITY.I6' : Concept().get_e55_domain('THREAT_PROBABILITY.I6'),
+                    'THREAT_TYPE.I4' : Concept().get_e55_domain('THREAT_TYPE.I4'),
+                    'THREAT_CATEGORY.I4' : Concept().get_e55_domain('THREAT_CATEGORY.I4'),
+                }
+            }
+
+            self.data['ACTIVITY_PLAN.E100'] = {
+                'branch_lists': self.get_nodes('ACTIVITY_PLAN.E100'),
+                'domains': {
+                    'ACTIVITY_RECOMMENDATION_TYPE.E55' : Concept().get_e55_domain('ACTIVITY_RECOMMENDATION_TYPE.E55'),
+                    'INTERVENTION_MITIGATION_TYPE.E55' : Concept().get_e55_domain('INTERVENTION_MITIGATION_TYPE.E55'),
+                    'PRIORITY_TYPE.E55' : Concept().get_e55_domain('PRIORITY_TYPE.E55'),
+                }
+            }
+
                
 class ExternalReferenceForm(ResourceForm):
     @staticmethod
