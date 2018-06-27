@@ -22,7 +22,7 @@ from arches.app.models.resource import Resource as ArchesResource
 from arches.app.search.search_engine_factory import SearchEngineFactory
 from arches.app.utils.betterJSONSerializer import JSONSerializer, JSONDeserializer
 from eamena.models import forms
-from eamena.utils.date_utils import date_to_int
+from arches.app.utils.date_utils import date_to_int
 from django.utils.translation import ugettext as _
 from arches.app.models.entity import Entity
 

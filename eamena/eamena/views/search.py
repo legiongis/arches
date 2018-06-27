@@ -30,10 +30,11 @@ from arches.app.search.search_engine_factory import SearchEngineFactory
 from arches.app.search.elasticsearch_dsl_builder import Bool, Match, Query, Nested, Terms, GeoShape, Range
 from django.utils.translation import ugettext as _
 from arches.app.utils.data_management.resources.exporter import ResourceExporter
+from arches.app.utils.date_utils import get_year_from_int,date_to_int
 
 from arches.app.views.resources import get_related_resources
 
-from eamena.utils.date_utils import get_year_from_int,date_to_int
+
 
 import csv
 import logging
