@@ -5,9 +5,13 @@ def date_to_int(val):
 
     try:
         date = parse_edtf(val)
-    ## if there's a problem parsing, try this as a long year
     except EDTFParseException:
-        date = parse_edtf("y{}".format(val))
+        ## if there's a problem parsing, try this as a long year
+        try:
+            date = parse_edtf("y{}".format(val))
+        except EDTFParseException:
+            ## if another parsing problem, try as short year
+            date = parse_edtf("{}".format(val.zfill(4)))
         
     # if it's a real DateAndTime (from a date node), must parse it further
     if isinstance(date,DateAndTime):
