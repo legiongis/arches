@@ -134,7 +134,8 @@ def search_results(request):
         
         ids_filter = Terms(field='entityid', terms=related_resources_from_prev_query)
         query.add_filter(ids_filter)
-        
+    import json
+    print json.dumps(query._dsl,indent=1)
     results = query.search(index='entity', doc_type='')
     
     total = results['hits']['total']
@@ -170,7 +171,6 @@ def build_search_results_dsl(request):
     boolfilter = Bool()
 
     query.dsl.update({'sort': sorting})
-
     return query
 
 def export_results(request):
