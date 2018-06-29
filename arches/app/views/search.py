@@ -391,51 +391,55 @@ def build_search_results_dsl(request):
             boolfilter.must(nested)
     
     ## final step is to add the time filters if they are present in the request
-    temporal_filter = JSONDeserializer().deserialize(request.GET.get('temporalFilter', None))[0]
-    
-    if 'year_min_max' in temporal_filter and len(temporal_filter['year_min_max']) == 2:
-        start = temporal_filter['year_min_max'][0]*10000
-        end = temporal_filter['year_min_max'][1]*10000
-        range = Range(field='extendeddates.value', gte=start, lte=end)
-        nested = Nested(path='extendeddates', query=range)
-        
-        if 'inverted' not in temporal_filter:
-            temporal_filter['inverted'] = False
-
-        if temporal_filter['inverted']:
-            boolfilter.must_not(nested)
-        else:
-            boolfilter.must(nested)
-
-    if 'filters' in temporal_filter:
-        
-        for temporal_filter in temporal_filter['filters']:
-            date = ''
-            date_operator = ''
-            for node in temporal_filter['nodes']:
-                if node['entitytypeid'] == 'DATE_COMPARISON_OPERATOR.E55':
-                    date_operator = node['value']
-                elif node['entitytypeid'] == 'date':
-                    date = node['value']
-
-            date_value = date_to_int(date)
-
-            if date_operator == '1': # equals query
-                range = Range(field='extendeddates.value', gte=date_value, lte=date_value)
-            elif date_operator == '0': # greater than query 
-                range = Range(field='extendeddates.value', lt=date_value)
-            elif date_operator == '2': # less than query
-                range = Range(field='extendeddates.value', gt=date_value)
+    temporal_filters = JSONDeserializer().deserialize(request.GET.get('temporalFilter',"[]"))
+    if temporal_filters:
+        time_boolfilter = Bool()
+        for index,temporal_filter in enumerate(temporal_filters):
+            if 'year_min_max' in temporal_filter and len(temporal_filter['year_min_max']) == 2:
+                start = temporal_filter['year_min_max'][0]*10000
+                end = temporal_filter['year_min_max'][1]*10000
+                range = Range(field='extendeddates.value', gte=start, lte=end)
+                minmaxnested = Nested(path='extendeddates', query=range)
                 
-            nested = Nested(path='extendeddates', query=range)
+                if filter_and_or[index] == 'or':
+                    time_boolfilter.should(minmaxnested)
+                else:
+                    if temporal_filter['inverted']:
+                        time_boolfilter.must_not(minmaxnested)
+                    else:    
+                        time_boolfilter.must(minmaxnested)
+                        
+            if 'filters' in temporal_filter:
+                for filter in temporal_filter['filters']:
+                    date, date_operator = False, False
+                    for node in filter['nodes']:
+                        if node['entitytypeid'] == 'DATE_COMPARISON_OPERATOR.E55':
+                            date_operator = node['value']
+                        if node['entitytypeid'] == 'date':
+                            date = node['value']
+                    if not date or not date_operator:
+                        continue
+                        
+                    date_value = date_to_int(date)
 
-            if 'inverted' not in temporal_filter:
-                temporal_filter['inverted'] = False
-
-            if temporal_filter['inverted']:
-                boolfilter.must_not(nested)
-            else:
-                boolfilter.must(nested)
+                    if date_operator == '1': # equals query
+                        range = Range(field='extendeddates.value', gte=date_value, lte=date_value)
+                    elif date_operator == '0': # greater than query 
+                        range = Range(field='extendeddates.value', lt=date_value)
+                    elif date_operator == '2': # less than query
+                        range = Range(field='extendeddates.value', gt=date_value)
+                        
+                    datenested = Nested(path='extendeddates', query=range)
+                    
+                    if filter_and_or[index] == 'or':
+                        time_boolfilter.should(datenested)
+                    else:
+                        if temporal_filter['inverted']:
+                            time_boolfilter.must_not(datenested)
+                        else:    
+                            time_boolfilter.must(datenested)
+            
+        query.add_filter(time_boolfilter)
 
     if not boolquery.empty:
         query.add_query(boolquery)
