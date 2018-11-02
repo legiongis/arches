@@ -76,6 +76,12 @@ Optional Environment Variables:
 	-> **Runs Django with options --noreload --nothreading. Useful for remote debugging.**
 -   `DJANGO_SECRET_KEY` = *50 character string*  
 	-> **Used by Django for security. Use this environment variable only if you run Arches without custom project (i.e. the `ARCHES_PROJECT` environment variable is not set)**
+-    `COMPRESS_STATIC_FILES` = True | False  
+    -> **Compresses static files when `DJANGO_MODE=PROD`.  
+        Use this if your web server supports serving gzipped files.  
+        Saves time during runtime, but initially takes long to compress.  
+        Only use this if your static files are stored and served from a local file system.  
+        Set the `STATIC_ROOT` env variable if you set it to anything other than '/static_root' in your `settings.py`.**
 -   `TZ` = *Time Zone*  
 	-> **Useful for logging the correct time. US Pacific = PST**
 
@@ -153,9 +159,7 @@ Settings of interest may be `GUNICORN_WORKERS` and `GUNICORN_WORKER_TIMEOUT`.
             - '444:443'
     ```
 
-
 - When you try to load Arches in your browser and all you see is a white page with black text (and many 404 errors in your browser console), check out [Running in DEV mode](#running-in-dev-mode)
-
 
 
 
@@ -304,6 +308,7 @@ To develop on Arches Core, ensure you are not already running PostgreSQL and it 
 	`docker-compose -f .\docker-compose-local.yml up`  
 
 8. See [Running in DEV mode](#running-in-dev-mode) to get exception messages in the browser and to bypass Nginx.  
+
 
 
 ##### Dependencies
