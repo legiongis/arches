@@ -21,6 +21,8 @@ PyLD[requests]==1.0.3
 pyprind==2.11.2
 pycryptodome<4.0.0,>=3.3.1
 urllib3==1.21.1
+pyopenssl==18.0.0
+django-compressor==2.2
 
 # Leave the following line commented so that pip install will ignore this
 # The installer uses the following line to download the proper version of ES
