@@ -24,8 +24,9 @@ define([
                                 if (item.status &&
                                     item.type &&
                                     item.status === 'uploaded' &&
-                                    item.type.indexOf('image') > -1 &&
-                                    _.contains(nodes, key)
+                                    item.type.indexOf('image') > -1
+                                    && item.name.indexOf('thumb') == -1
+                                    // && _.contains(nodes, key)
                                 ) {
                                     imgs.push({
                                         src: item.url,
