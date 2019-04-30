@@ -983,7 +983,7 @@ class FileListDataType(BaseDataType):
                 pass
             tile_file = {}
             tile_file['file_id'] =  str(uuid.uuid4())
-            tile_file['status'] = ""
+            tile_file['status'] = "uploaded"
             tile_file['name'] =  file_path.split('/')[-1]
             tile_file['url'] =  settings.MEDIA_URL + 'uploadedfiles/' + str(tile_file['name'])
             # tile_file['index'] =  0
