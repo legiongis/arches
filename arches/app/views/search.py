@@ -361,7 +361,7 @@ def build_search_results_dsl(request):
             provisional_resource_filter.filter(Terms(field='provisional_resource', terms=['true', 'partial']))
             geo_agg_filter.filter(Terms(field='points.provisional', terms=['true']))
 
-        search_query.must(provisional_resource_filter)
+        # search_query.must(provisional_resource_filter)
 
     geo_agg_filter.filter(Terms(field='points.nodegroup_id', terms=permitted_nodegroups))
     nested_agg_filter.add_filter(geo_agg_filter)
