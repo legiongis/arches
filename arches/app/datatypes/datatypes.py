@@ -540,7 +540,7 @@ class GeojsonFeatureCollectionDataType(BaseDataType):
 
         return bounds
 
-    def get_layer_config(self, node=None):
+    def get_layer_config(self, node=None, useids=[]):
         sql_list = []
         database = settings.DATABASES['default']
         if node is not None and node.config is not None:
@@ -587,15 +587,20 @@ class GeojsonFeatureCollectionDataType(BaseDataType):
                 sql_string = cluster_sql % (distance, int(config['clusterMinPoints']), node.pk)
                 sql_list.append(sql_string)
 
-            sql_list.append("""
+            resid_where = None
+            if len(useids) > 0:
+                resid_where = "AND resourceinstanceid IN ('{}')".format("','".join(useids))
+
+            final_clause = """
                 SELECT resourceinstanceid::text,
                         (row_number() over ())::text as __id__,
                         1 as total,
                         geom AS __geometry__,
                         '' AS extent
                     FROM mv_geojson_geoms
-                    WHERE nodeid = '%s'
-            """ % node.pk)
+                    WHERE nodeid = '{}' {}
+            """.format(node.pk, resid_where if resid_where is not None else "")
+            sql_list.append(final_clause)
 
         else:
             config = {"cacheTiles": False}

@@ -14,16 +14,22 @@ from arches.app.models import models
 from arches.app.models.system_settings import settings
 from arches.app.utils.geo_utils import GeoUtils
 
+from fpan.utils.permission_backend import get_allowed_resource_ids
 
 def get_tileserver_config(layer_id, request=None):
     database = settings.DATABASES['default']
     datatype_factory = DataTypeFactory()
-
     try:
         node = models.Node.objects.get(pk=layer_id)
         datatype = datatype_factory.get_instance(node.datatype)
         if request == None or request.user.has_perm('read_nodegroup', node.nodegroup):
-            layer_config = datatype.get_layer_config(node)
+            allowed_ids = get_allowed_resource_ids(request.user, str(node.graph_id))
+            if isinstance(allowed_ids, list) and len(allowed_ids) > 0:
+                layer_config = datatype.get_layer_config(node, useids=allowed_ids)
+            elif allowed_ids == "full_access":
+                layer_config = datatype.get_layer_config(node)
+            else:
+                layer_config = datatype.get_layer_config(None)
         else:
             layer_config = datatype.get_layer_config(None)
     except Exception:
