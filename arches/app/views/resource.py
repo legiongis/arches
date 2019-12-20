@@ -367,9 +367,19 @@ class ResourceEditLogView(BaseManagerView):
                     pass
 
     def get(self, request, resourceid=None, view_template='views/resource/edit-log.htm'):
+
         if resourceid is None:
-            recent_edits = models.EditLog.objects.all().exclude(
-                resourceclassid=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID).order_by('-timestamp')[:100]
+            recent_edits = (
+                models.EditLog.objects.all()
+                    .exclude(resourceclassid=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
+                    .order_by('-timestamp')
+            )
+
+            if not request.user.is_superuser:
+                recent_edits = recent_edits.filter(user_username=request.user.username)
+
+            recent_edits = recent_edits[:100]
+
             edited_ids = list(set([edit.resourceinstanceid for edit in recent_edits]))
             resources = Resource.objects.filter(resourceinstanceid__in=edited_ids)
             edit_type_lookup = {
