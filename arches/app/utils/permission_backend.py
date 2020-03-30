@@ -191,4 +191,9 @@ def user_is_resource_reviewer(user):
     Single test for whether a user is in the Resource Reviewer group
     """
 
-    return user.groups.filter(name='Resource Reviewer').exists()
+    # if provisional editing is disabled, treat all users as resource reviewers
+    if settings.DISABLE_PROVISIONAL_EDITING is True:
+        return True
+    # otherwise check for group membership
+    else:
+        return user.groups.filter(name='Resource Reviewer').exists()
