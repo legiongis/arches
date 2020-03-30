@@ -607,6 +607,12 @@ MAP_MAX_ZOOM = 20
 # causing your application to break.
 OVERRIDE_RESOURCE_MODEL_LOCK = False
 
+# Set to True if you don't want your application to use provisional editing at
+# all. All editor users will be treated as Resource Reviewers. If set True, you
+# must also make sure to run the following command to disable the Q/A search UI
+#     python manage.py search unregister -n provisional-filter
+DISABLE_PROVISIONAL_EDITING = False
+
 # bounds for search results hex binning fabric (search grid).
 # a smaller bbox will give you less distortion in hexes and better performance
 DEFAULT_BOUNDS = {
