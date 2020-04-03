@@ -20,6 +20,7 @@ from arches.app.search.elasticsearch_dsl_builder import Bool, Match, Range, Term
 from arches.app.search.search_engine_factory import SearchEngineFactory
 from django.core.cache import cache
 from django.core.files.base import ContentFile
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos import GeometryCollection
@@ -140,11 +141,9 @@ class NumberDataType(BaseDataType):
         errors = []
 
         try:
-            if value == "":
-                value = None
             if value is not None:
                 decimal.Decimal(value)
-        except Exception:
+        except Exception as e:
             dt = self.datatype_model.datatype
             errors.append(
                 {
@@ -175,11 +174,11 @@ class NumberDataType(BaseDataType):
                 if value["op"] != "eq":
                     operators = {"gte": None, "lte": None, "lt": None, "gt": None}
                     operators[value["op"]] = value["val"]
+                    search_query = Range(field="tiles.data.%s" % (str(node.pk)), **operators)
                 else:
-                    operators = {"gte": value["val"], "lte": value["val"]}
-                search_query = Range(field="tiles.data.%s" % (str(node.pk)), **operators)
+                    search_query = Match(field="tiles.data.%s" % (str(node.pk)), query=value["val"], type="phrase_prefix")
                 query.must(search_query)
-        except KeyError:
+        except KeyError as e:
             pass
 
     def is_a_literal_in_rdf(self):
@@ -267,6 +266,18 @@ class DateDataType(BaseDataType):
                     except:
                         valid = False
             if valid == False:
+                # attempt further parsing if passed timezone data from collector
+                parsed = parse_datetime(value)
+                # logger.debug(_('%s' % parsed))
+                parsed = parsed.replace(tzinfo=None)
+                # logger.debug(_('%s' % parsed))
+                try:
+                     if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                          logger.debug(_('true'))
+                          valid = True
+                except:
+                     valid = False            
+            if valid == False:
                 if hasattr(settings, "DATE_IMPORT_EXPORT_FORMAT"):
                     date_format = settings.DATE_IMPORT_EXPORT_FORMAT
                 else:
@@ -315,9 +326,9 @@ class DateDataType(BaseDataType):
                 if value["op"] != "eq":
                     operators = {"gte": None, "lte": None, "lt": None, "gt": None}
                     operators[value["op"]] = date_value
+                    search_query = Range(field="tiles.data.%s" % (str(node.pk)), **operators)
                 else:
-                    operators = {"gte": date_value, "lte": date_value}
-                search_query = Range(field="tiles.data.%s" % (str(node.pk)), **operators)
+                    search_query = Match(field="tiles.data.%s" % (str(node.pk)), query=date_value, type="phrase_prefix")
                 query.must(search_query)
         except KeyError as e:
             pass
@@ -366,10 +377,8 @@ class EDTFDataType(BaseDataType):
 
     def get_display_value(self, tile, node):
         data = self.get_tile_data(tile)
-        try:
-            value = data[str(node.pk)]["value"]
-        except TypeError:
-            value = data[str(node.pk)]
+        value = data[str(node.pk)]["value"]
+
         return value
 
     def append_to_document(self, document, nodevalue, nodeid, tile, provisional=False):
@@ -1052,18 +1061,12 @@ class FileListDataType(BaseDataType):
             errors.append({"type": "ERROR", "message": f"datatype: {dt}, value: {value} - {e} ."})
         return errors
 
-    def append_to_document(self, document, nodevalue, nodeid, tile, provisional=False):
-        for f in tile.data[str(nodeid)]:
-            val = {"string": f["name"], "nodegroup_id": tile.nodegroup_id, "provisional": provisional}
-            document["strings"].append(val)
-
     def get_display_value(self, tile, node):
         data = self.get_tile_data(tile)
         files = data[str(node.pk)]
         file_list_str = ""
-        if files is not None:
-            for f in files:
-                file_list_str = file_list_str + f["name"] + " | "
+        for f in files:
+            file_list_str = file_list_str + f["name"] + " | "
 
         return file_list_str
 
