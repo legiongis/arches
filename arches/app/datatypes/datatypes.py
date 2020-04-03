@@ -273,7 +273,7 @@ class DateDataType(BaseDataType):
                 # logger.debug(_('%s' % parsed))
                 try:
                      if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                          logger.debug(_('true'))
+                          # logger.debug(_('true'))
                           valid = True
                 except:
                      valid = False            
