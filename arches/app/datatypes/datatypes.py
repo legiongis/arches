@@ -274,7 +274,6 @@ class DateDataType(BaseDataType):
                 # logger.debug(_('%s' % parsed))
                 try:
                      if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                          logger.debug(_('true'))
                           valid = True
                 except:
                      valid = False            
@@ -1259,8 +1258,8 @@ class FileListDataType(BaseDataType):
         attachement as a file, updates the provisional edit value with the
         file location information and returns the revised provisional edit value
         """
-        pprint(couch_doc)
-        pprint(node_value)
+        for datetime in node_value:
+            print('here')
         try:
             for file in node_value:
                 attachment = db.get_attachment(couch_doc["_id"], file["file_id"])
