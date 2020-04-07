@@ -250,6 +250,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
+                    print(datatype)
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     if newvalue is not None:
                         user_edit["value"][nodeid] = newvalue
@@ -333,8 +334,6 @@ class MobileSurvey(models.MobileSurveyModel):
                                 prov_edit = self.get_provisional_edit(row.doc, tile, sync_user_id, db)
                                 if prov_edit is not None:
                                     tile.data = prov_edit
-                            contents = inspect.getmembers(tile)
-                            print(contents)
                             self.handle_reviewer_edits(sync_user, tile)
                             tile.save(user=sync_user)
                             self.save_revision_log(row.doc, synclog, action)
