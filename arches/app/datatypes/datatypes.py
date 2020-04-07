@@ -264,19 +264,7 @@ class DateDataType(BaseDataType):
                         if datetime.strptime(value, mat):
                             valid = True
                     except:
-                        valid = False
-            if valid == False:
-                # attempt further parsing if passed timezone data from collector
-                parsed = parse_datetime(value)
-                # logger.debug(_('%s' % parsed))
-                parsed = parsed.replace(tzinfo=None)
-                # logger.debug(_('%s' % parsed))
-                try:
-                     if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                          # logger.debug(_('true'))
-                          valid = True
-                except:
-                     valid = False            
+                        valid = False    
             if valid == False:
                 if hasattr(settings, "DATE_IMPORT_EXPORT_FORMAT"):
                     date_format = settings.DATE_IMPORT_EXPORT_FORMAT
@@ -1260,7 +1248,7 @@ class FileListDataType(BaseDataType):
         """
 
         try:
-            for file in node_value:
+             for file in node_value:
                 attachment = db.get_attachment(couch_doc["_id"], file["file_id"])
                 if attachment is not None:
                     attachment_file = attachment.read()
@@ -1276,9 +1264,23 @@ class FileListDataType(BaseDataType):
                         file["accepted"] = True
                         file["size"] = file_data.size
                     # db.delete_attachment(couch_doc, file['name'])
-
+              
         except KeyError as e:
             pass
+        try: 
+             for datetime in nodevalue:
+                logger.debug(_('yes!'))
+                parsed = parse_datetime(value)
+                # logger.debug(_('%s' % parsed))
+                parsed = parsed.replace(tzinfo=None)
+                # logger.debug(_('%s' % parsed))
+                try:
+                     if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                          logger.debug(_('true'))
+                          valid = True
+                except:
+                     valid = False       
+        
         return node_value
 
     def collects_multiple_values(self):
