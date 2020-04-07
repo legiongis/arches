@@ -1280,7 +1280,6 @@ class FileListDataType(BaseDataType):
                           valid = True
                 except:
                      valid = False       
-        
         return node_value
 
     def collects_multiple_values(self):
