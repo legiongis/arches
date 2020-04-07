@@ -4,7 +4,7 @@ import decimal
 import base64
 import re
 import logging
-import pprint
+import inspect
 from distutils import util
 from datetime import datetime
 from mimetypes import MimeTypes
