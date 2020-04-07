@@ -1257,7 +1257,7 @@ class FileListDataType(BaseDataType):
         attachement as a file, updates the provisional edit value with the
         file location information and returns the revised provisional edit value
         """
-        print('here')
+        logger.debug(_('processing mobile data'))        
         try:
             for file in node_value:
                 attachment = db.get_attachment(couch_doc["_id"], file["file_id"])
