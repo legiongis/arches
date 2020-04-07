@@ -17,6 +17,7 @@ import uuid
 import json
 import urllib.parse
 import logging
+import inspect
 from datetime import datetime
 from datetime import timedelta
 from copy import copy, deepcopy
@@ -313,11 +314,9 @@ class MobileSurvey(models.MobileSurveyModel):
                             action = "update"
                             try:
                                 tile = Tile.objects.get(tileid=row.doc["tileid"])
-                                print(tile)
                                 prov_edit = self.get_provisional_edit(row.doc, tile, sync_user_id, db)
                                 if prov_edit is not None:
                                     tile.data = prov_edit
-
                                 # If there are conflicting documents, lets clear those out
                                 if "_conflicts" in row.doc:
                                     for conflict_rev in row.doc["_conflicts"]:
@@ -334,7 +333,8 @@ class MobileSurvey(models.MobileSurveyModel):
                                 prov_edit = self.get_provisional_edit(row.doc, tile, sync_user_id, db)
                                 if prov_edit is not None:
                                     tile.data = prov_edit
-                                    
+                            contents = inspect.getmembers(tile)
+                            print(contents)
                             self.handle_reviewer_edits(sync_user, tile)
                             tile.save(user=sync_user)
                             self.save_revision_log(row.doc, synclog, action)
