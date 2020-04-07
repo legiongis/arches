@@ -290,6 +290,7 @@ class MobileSurvey(models.MobileSurveyModel):
         with transaction.atomic():
             couch_docs = self.couch.all_docs(db)
             for row in couch_docs:
+                print(row.doc)
                 if row.doc["type"] == "resource":
                     if self.check_if_revision_exists(row.doc) is False:
                         if "provisional_resource" in row.doc and row.doc["provisional_resource"] == "true":
@@ -333,7 +334,7 @@ class MobileSurvey(models.MobileSurveyModel):
                                 prov_edit = self.get_provisional_edit(row.doc, tile, sync_user_id, db)
                                 if prov_edit is not None:
                                     tile.data = prov_edit
-
+                                    
                             self.handle_reviewer_edits(sync_user, tile)
                             tile.save(user=sync_user)
                             self.save_revision_log(row.doc, synclog, action)
