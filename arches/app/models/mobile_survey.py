@@ -252,8 +252,6 @@ class MobileSurvey(models.MobileSurveyModel):
             if newvalue is not None:
                 user_edit["value"][nodeid] = newvalue
         return user_edit["value"]
-        else:
-            return None
 
     def check_if_revision_exists(self, doc):
         res = False
