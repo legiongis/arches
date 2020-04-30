@@ -274,8 +274,8 @@ class DateDataType(BaseDataType):
             try:
                 if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
                     valid = True
-                except:
-                    valid = False      
+            except:
+                valid = False      
             
             if valid == False:
                 if hasattr(settings, "DATE_IMPORT_EXPORT_FORMAT"):
