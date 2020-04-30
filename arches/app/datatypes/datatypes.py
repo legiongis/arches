@@ -264,18 +264,7 @@ class DateDataType(BaseDataType):
                         if datetime.strptime(value, mat):
                             valid = True
                     except:
-                        valid = False
-            if valid == False:
-                # attempt further parsing if passed timezone data from collector
-                parsed = parse_datetime(value)
-                # logger.debug(_('%s' % parsed))
-                parsed = parsed.replace(tzinfo=None)
-                # logger.debug(_('%s' % parsed))
-                try:
-                     if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                          valid = True
-                except:
-                     valid = False            
+                        valid = False    
             if valid == False:
                 if hasattr(settings, "DATE_IMPORT_EXPORT_FORMAT"):
                     date_format = settings.DATE_IMPORT_EXPORT_FORMAT
@@ -1278,6 +1267,17 @@ class FileListDataType(BaseDataType):
 
         except KeyError as e:
             pass
+        try:
+            for date in node_value:
+                # attempt further parsing if passed timezone data from collector
+                parsed = parse_datetime(node_value)
+                logger.debug(_('%s' % parsed))
+                parsed = parsed.replace(tzinfo=None)
+                logger.debug(_('%s' % parsed))
+                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    node_value = parsed
+        except KeyError as e:
+            pass        
         return node_value
 
     def collects_multiple_values(self):
