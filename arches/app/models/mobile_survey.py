@@ -243,17 +243,15 @@ class MobileSurvey(models.MobileSurveyModel):
                 tile.provisionaledits.pop(user_id, None)
 
     def get_provisional_edit(self, doc, tile, sync_user_id, db):
-        if doc["provisionaledits"] != "":
-            if sync_user_id in doc["provisionaledits"]:
-                user_edit = doc["provisionaledits"][sync_user_id]
-                for nodeid, value in iter(list(user_edit["value"].items())):
-                    datatype_factory = DataTypeFactory()
-                    node = models.Node.objects.get(nodeid=nodeid)
-                    datatype = datatype_factory.get_instance(node.datatype)
-                    newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
-                    if newvalue is not None:
-                        user_edit["value"][nodeid] = newvalue
-                return user_edit["value"]
+        user_edit = doc["provisionaledits"][sync_user_id]
+        for nodeid, value in iter(list(user_edit["value"].items())):
+            datatype_factory = DataTypeFactory()
+            node = models.Node.objects.get(nodeid=nodeid)
+            datatype = datatype_factory.get_instance(node.datatype)
+            newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
+            if newvalue is not None:
+                user_edit["value"][nodeid] = newvalue
+        return user_edit["value"]
         else:
             return None
 
