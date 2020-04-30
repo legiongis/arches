@@ -140,7 +140,16 @@ class MobileSurvey(models.MobileSurveyModel):
                         node["config"]["options"] = []
                         for resource_instance in Resource.objects.filter(graph_id=graph_id):
                             node["config"]["options"].append({"id": str(resource_instance.pk), "name": resource_instance.displayname})
-
+                if node["datatype"] == "date":
+                    logger.debug(_('date'))
+                    # attempt further parsing if passed timezone data from collector
+                    parsed = parse_datetime(node["value"])
+                    logger.debug(_('%s' % parsed))
+                    parsed = parsed.replace(tzinfo=None)
+                    logger.debug(_('%s' % parsed))
+                    if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    node["value"] = parsed
+                
         for subcard in parentcard.cards:
             self.collect_card_widget_node_data(graph_obj, graph, subcard, nodegroupids)
 
@@ -253,6 +262,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
+                    logger.debug(_('going to process'))
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     if newvalue is not None:
                         user_edit["value"][nodeid] = newvalue
