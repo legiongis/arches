@@ -243,15 +243,22 @@ class MobileSurvey(models.MobileSurveyModel):
                 tile.provisionaledits.pop(user_id, None)
 
     def get_provisional_edit(self, doc, tile, sync_user_id, db):
-        user_edit = doc["provisionaledits"][sync_user_id]
-        for nodeid, value in iter(list(user_edit["value"].items())):
-            datatype_factory = DataTypeFactory()
-            node = models.Node.objects.get(nodeid=nodeid)
-            datatype = datatype_factory.get_instance(node.datatype)
-            newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
-            if newvalue is not None:
-                user_edit["value"][nodeid] = newvalue
-        return user_edit["value"]
+        logger.debug(_('get_provisional_edit'))
+        if doc["provisionaledits"] != "":
+            logger.debug(_('248'))
+            if sync_user_id in doc["provisionaledits"]:
+                logger.debug(_('250'))
+                user_edit = doc["provisionaledits"][sync_user_id]
+                for nodeid, value in iter(list(user_edit["value"].items())):
+                    datatype_factory = DataTypeFactory()
+                    node = models.Node.objects.get(nodeid=nodeid)
+                    datatype = datatype_factory.get_instance(node.datatype)
+                    newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
+                    if newvalue is not None:
+                        user_edit["value"][nodeid] = newvalue
+                return user_edit["value"]
+        else:
+            return None
 
     def check_if_revision_exists(self, doc):
         res = False
