@@ -148,7 +148,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     parsed = parsed.replace(tzinfo=None)
                     logger.debug(_('%s' % parsed))
                     if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                    node["value"] = parsed
+                        node["value"] = parsed
                 
         for subcard in parentcard.cards:
             self.collect_card_widget_node_data(graph_obj, graph, subcard, nodegroupids)
