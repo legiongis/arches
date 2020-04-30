@@ -265,6 +265,18 @@ class DateDataType(BaseDataType):
                             valid = True
                     except:
                         valid = False    
+        if valid == False:
+            # attempt further parsing if passed timezone data from collector
+            parsed = parse_datetime(value)
+            # logger.debug(_('%s' % parsed))
+            parsed = parsed.replace(tzinfo=None)
+            # logger.debug(_('%s' % parsed))
+            try:
+                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    valid = True
+                except:
+                    valid = False      
+            
             if valid == False:
                 if hasattr(settings, "DATE_IMPORT_EXPORT_FORMAT"):
                     date_format = settings.DATE_IMPORT_EXPORT_FORMAT
@@ -1264,10 +1276,6 @@ class FileListDataType(BaseDataType):
                         file["accepted"] = True
                         file["size"] = file_data.size
                     # db.delete_attachment(couch_doc, file['name'])
-
-        except KeyError as e:
-            pass
-        try:
             for date in node_value:
                 # attempt further parsing if passed timezone data from collector
                 parsed = parse_datetime(node_value)
