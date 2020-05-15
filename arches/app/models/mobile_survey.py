@@ -262,7 +262,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
-                    datatypevalue = getattr(datatype, 'datatype_model')
+                    datatypevalue = str(getattr(datatype, 'datatype_model'))
                     logger.debug(_('%s' % datatypevalue))
                     if datatypevalue == "date":
                         logger.debug(_('attempting date parse'))
