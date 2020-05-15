@@ -1277,6 +1277,7 @@ class FileListDataType(BaseDataType):
                         file["size"] = file_data.size
                     # db.delete_attachment(couch_doc, file['name'])
             if isinstance(node_value, datetime.date) in node_value:
+                logger.debug('passed')
                 # attempt further parsing if passed timezone data from collector
                 parsed = parse_datetime(node_value)
                 logger.debug(_('%s' % parsed))
