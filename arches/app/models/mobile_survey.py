@@ -266,7 +266,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     logger.debug(_('%s' % datatypevalue))
                     if datatypevalue == "date":
                         logger.debug(_('attempting date parse'))
-                        newdate = datatype.process_mobile_dates
+                        newdate = datatype.process_mobile_dates(tile, value)
                         user_edit["value"][nodeid] = newdate
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     if newvalue is not None:
