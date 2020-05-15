@@ -56,7 +56,7 @@ class BaseDataType(object):
         """
         Parses UTC dates from mobile device to an Arches friendly format w/o timezones
         """
-        return value
+        return node_value
     
     def get_map_layer(self, node=None):
         """
