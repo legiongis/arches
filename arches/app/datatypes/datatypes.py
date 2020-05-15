@@ -1279,8 +1279,7 @@ class FileListDataType(BaseDataType):
             pass        
         return node_value
 
-    def process_mobile_dates(self, value, node, db, couch_doc, node_value):
-        def validate(self, value, row_number=None, source="", node=None, nodeid=None):
+    def process_mobile_dates(self, value):
         errors = []
         if value is not None:
             valid = False
