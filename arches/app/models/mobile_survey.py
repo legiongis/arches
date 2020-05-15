@@ -262,7 +262,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
-                    if datatype.DDataType == 'date':
+                    if datatype.datatype_model == 'date':
                         newdate = datatype.process_mobile_date
                         user_edit["value"][nodeid] = newdate
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
