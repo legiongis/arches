@@ -270,6 +270,7 @@ class MobileSurvey(models.MobileSurveyModel):
                         print(type(value))
                         print(value)
                         newvalue = datatype.process_mobile_dates(value)
+                        print(newvalue)
                     if datatypevalue == "file-list":
                         newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     if newvalue is not None:
