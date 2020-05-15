@@ -52,7 +52,7 @@ class BaseDataType(object):
         """
         return None
 
-    def process_mobile_dates(self, value):
+    def process_mobile_dates(self, node_value):
         """
         Parses UTC dates from mobile device to an Arches friendly format w/o timezones
         """

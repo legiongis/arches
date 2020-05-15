@@ -267,6 +267,8 @@ class MobileSurvey(models.MobileSurveyModel):
                     newvalue = None
                     if datatypevalue == "date":
                         logger.debug(_('attempting date parse'))
+                        print(type(value))
+                        print(value)
                         newvalue = datatype.process_mobile_dates(value)
                     if datatypevalue == "file-list":
                         newvalue = datatype.process_mobile_data(tile, node, db, doc, value)

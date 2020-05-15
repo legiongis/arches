@@ -1279,11 +1279,12 @@ class FileListDataType(BaseDataType):
             pass        
         return node_value
 
-    def process_mobile_dates(self, value):
+    def process_mobile_dates(self, node_value):
+        print(node_value)
         errors = []
         if value is not None:
             valid = False
-            parsed = parse_datetime(value)
+            parsed = parse_datetime(node_value)
             logger.debug(_('%s' % parsed))
             parsed = parsed.replace(tzinfo=None)
             logger.debug(_('%s' % parsed))
