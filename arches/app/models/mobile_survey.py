@@ -264,7 +264,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype = datatype_factory.get_instance(node.datatype)
                     datatypevalue = getattr(datatype, 'datatype_model')
                     logger.debug(_('%s' % datatypevalue))
-                    if datatypevalue == 'date':
+                    if datatypevalue == "date":
                         logger.debug(_('date'))
                         newdate = datatype.process_mobile_dates
                         user_edit["value"][nodeid] = newdate

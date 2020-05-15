@@ -1284,9 +1284,9 @@ class FileListDataType(BaseDataType):
         if value is not None:
             valid = False
             parsed = parse_datetime(value)
-            # logger.debug(_('%s' % parsed))
+            logger.debug(_('%s' % parsed))
             parsed = parsed.replace(tzinfo=None)
-            # logger.debug(_('%s' % parsed))
+            logger.debug(_('%s' % parsed))
             try:
                 if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
                     valid = True
