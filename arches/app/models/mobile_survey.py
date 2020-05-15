@@ -262,10 +262,10 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
-                    logger.debug(_('%s' % datatype.__dict__))
-                    logger.debug(_('going to process'))
+                    if datatype.DDataType == 'date':
+                        newdate = datatype.process_mobile_date
+                        user_edit["value"][nodeid] = newdate
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
-                    logger.debug(_('%s' % newvalue))
                     if newvalue is not None:
                         user_edit["value"][nodeid] = newvalue
                 return user_edit["value"]

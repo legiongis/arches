@@ -1258,7 +1258,6 @@ class FileListDataType(BaseDataType):
         attachement as a file, updates the provisional edit value with the
         file location information and returns the revised provisional edit value
         """
-        logger.debug(_('processing mobile data'))        
         try:
             for file in node_value:
                 attachment = db.get_attachment(couch_doc["_id"], file["file_id"])
@@ -1276,20 +1275,27 @@ class FileListDataType(BaseDataType):
                         file["accepted"] = True
                         file["size"] = file_data.size
                     # db.delete_attachment(couch_doc, file['name'])
-            logger.debug(_('here'))
-            if isinstance(node_value, datetime.date) in node_value:
-                logger.debug('passed')
-                # attempt further parsing if passed timezone data from collector
-                parsed = parse_datetime(node_value)
-                logger.debug(_('%s' % parsed))
-                parsed = parsed.replace(tzinfo=None)
-                logger.debug(_('%s' % parsed))
-                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                    node_value = parsed
         except KeyError as e:
             pass        
         return node_value
 
+    def process_mobile_dates(self, value, node, db, couch_doc, node_value):
+        def validate(self, value, row_number=None, source="", node=None, nodeid=None):
+        errors = []
+        if value is not None:
+            valid = False
+            parsed = parse_datetime(value)
+            # logger.debug(_('%s' % parsed))
+            parsed = parsed.replace(tzinfo=None)
+            # logger.debug(_('%s' % parsed))
+            try:
+                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    valid = True
+            except:
+                valid = False      
+            
+        return parsed
+    
     def collects_multiple_values(self):
         return True
 
