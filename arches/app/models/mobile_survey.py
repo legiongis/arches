@@ -262,6 +262,7 @@ class MobileSurvey(models.MobileSurveyModel):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
+                    logger.debug(_('%s' % datatype))
                     logger.debug(_('going to process'))
                     newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     logger.debug(_('%s' % newvalue))
