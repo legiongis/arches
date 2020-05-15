@@ -1280,7 +1280,7 @@ class FileListDataType(BaseDataType):
         return node_value
 
     def process_mobile_dates(self, node_value):
-        print(node_value)
+        print('date processing')
         errors = []
         if value is not None:
             valid = False
