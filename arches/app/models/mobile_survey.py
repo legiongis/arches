@@ -144,12 +144,12 @@ class MobileSurvey(models.MobileSurveyModel):
                 if node["datatype"] == "date":
                     logger.debug(_('date'))
                     # attempt further parsing if passed timezone data from collector
-                    parsed = parse_datetime(node["value"])
-                    logger.debug(_('%s' % parsed))
-                    parsed = parsed.replace(tzinfo=None)
-                    logger.debug(_('%s' % parsed))
-                    if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                        node["value"] = parsed
+                    # parsed = parse_datetime(node["value"])
+                    # logger.debug(_('%s' % parsed))
+                    # parsed = parsed.replace(tzinfo=None)
+                    # logger.debug(_('%s' % parsed))
+                    # if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    # node["value"] = parsed
                 
         for subcard in parentcard.cards:
             self.collect_card_widget_node_data(graph_obj, graph, subcard, nodegroupids)
