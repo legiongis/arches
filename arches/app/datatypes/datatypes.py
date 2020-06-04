@@ -295,18 +295,15 @@ class DateDataType(BaseDataType):
     
     def process_mobile_dates(node_value):
         print('date processing')
+        print(node_value)
         errors = []
         if node_value is not None:
-            valid = False
-            parsed = parse_date(node_value)
+            parsed = parse_datetime(node_value)
             logger.debug(_('%s' % parsed))
-            # parsed = parsed.replace(tzinfo=None)
-            # logger.debug(_('%s' % parsed))
-            try:
-                if datetime.strptime(str(parsed), "%Y-%m-%d"):
-                    valid = True
-            except:
-                valid = False      
+            parsed = parsed.replace(tzinfo=None)
+            logger.debug(_('%s' % parsed))
+            parsed = datetime.strftime(parsed, "%Y-%m-%d")
+            logger.debug(_('%s' % parsed))
         return parsed
     
     def transform_import_values(self, value, nodeid):
