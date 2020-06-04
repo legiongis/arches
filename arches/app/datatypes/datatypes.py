@@ -295,9 +295,19 @@ class DateDataType(BaseDataType):
     
     def process_mobile_dates(node_value):
         if node_value is not None:
-            parsed = parse_datetime(node_value)
-            parsed = parsed.replace(tzinfo=None)
-            parsed = datetime.strftime(parsed, "%Y-%m-%d")
+            date_formats = ["-%Y", "%Y", "%Y-%m-%d", "%B-%m-%d", "%Y-%m-%d %H:%M:%S"]
+            valid = False
+            for mat in date_formats:
+                if valid == False:
+                    try:
+                        if datetime.strptime(node_value, mat):
+                            valid = True
+                    except:
+                        valid = False    
+                if valid == False:
+                    parsed = parse_datetime(node_value)
+                    parsed = parsed.replace(tzinfo=None)
+                parsed = datetime.strftime(parsed, "%Y-%m-%d")
         return parsed
     
     def transform_import_values(self, value, nodeid):
