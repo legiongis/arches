@@ -292,7 +292,24 @@ class DateDataType(BaseDataType):
                 )
 
         return errors
-
+    
+    def process_mobile_dates(self, node_value):
+        print('date processing')
+        errors = []
+        if node_value is not None:
+            valid = False
+            parsed = parse_datetime(node_value)
+            logger.debug(_('%s' % parsed))
+            parsed = parsed.replace(tzinfo=None)
+            logger.debug(_('%s' % parsed))
+            try:
+                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    valid = True
+            except:
+                valid = False      
+            
+        return parsed
+    
     def transform_import_values(self, value, nodeid):
         if type(value) == list:
             value = value[0]
@@ -1250,23 +1267,6 @@ class FileListDataType(BaseDataType):
     def from_rdf(self, json_ld_node):
         # Currently up in the air about how best to do file imports via JSON-LD
         pass
-
-    def process_mobile_dates(self, node_value):
-        print('date processing')
-        errors = []
-        if node_value is not None:
-            valid = False
-            parsed = parse_datetime(node_value)
-            logger.debug(_('%s' % parsed))
-            parsed = parsed.replace(tzinfo=None)
-            logger.debug(_('%s' % parsed))
-            try:
-                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                    valid = True
-            except:
-                valid = False      
-            
-        return parsed
     
     def process_mobile_data(self, tile, node, db, couch_doc, node_value):
         """

@@ -26,7 +26,7 @@ from django.db import transaction
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
 from arches.app.datatypes.datatypes import DataTypeFactory
-from arches.app.datatypes.datatypes import process_mobile_dates
+from arches.app.datatypes.datatypes import DateDataType
 from arches.app.models import models
 from arches.app.models.concept import Concept
 from arches.app.models.tile import Tile
@@ -261,7 +261,7 @@ class MobileSurvey(models.MobileSurveyModel):
                         logger.debug(_('attempting date parse'))
                         print(type(value))
                         print(value)
-                        newvalue = process_mobile_dates(value)
+                        newvalue = DateDataType.process_mobile_dates(value)
                         print(newvalue)
                     if datatypevalue == "file-list":
                         newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
