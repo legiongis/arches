@@ -45,12 +45,6 @@ class BaseDataType(object):
         Gets the bounds of a geometry if the datatype is spatial
         """
         return None
-
-    def process_mobile_dates(self, node_value):
-        """
-        Parses UTC dates from mobile device to an Arches friendly format w/o timezones
-        """
-        return None
     
     def process_mobile_data(self, tile, node, db, couch_doc, node_value):
         """
