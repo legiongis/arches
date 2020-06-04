@@ -244,25 +244,19 @@ class MobileSurvey(models.MobileSurveyModel):
                 tile.provisionaledits.pop(user_id, None)
 
     def get_provisional_edit(self, doc, tile, sync_user_id, db):
-        logger.debug(_('get_provisional_edit'))
+        # logger.debug(_('get_provisional_edit'))
         if doc["provisionaledits"] != "":
-            logger.debug(_('248'))
             if sync_user_id in doc["provisionaledits"]:
-                logger.debug(_('250'))
                 user_edit = doc["provisionaledits"][sync_user_id]
                 for nodeid, value in iter(list(user_edit["value"].items())):
                     datatype_factory = DataTypeFactory()
                     node = models.Node.objects.get(nodeid=nodeid)
                     datatype = datatype_factory.get_instance(node.datatype)
                     datatypevalue = str(getattr(datatype, 'datatype_model'))
-                    logger.debug(_('%s' % datatypevalue))
+                    # logger.debug(_('%s' % datatypevalue))
                     newvalue = None
                     if datatypevalue == "date":
-                        logger.debug(_('attempting date parse'))
-                        print(type(value))
-                        print(value)
                         newvalue = DateDataType.process_mobile_dates(value)
-                        print(newvalue)
                     if datatypevalue == "file-list":
                         newvalue = datatype.process_mobile_data(tile, node, db, doc, value)
                     if newvalue is not None:
