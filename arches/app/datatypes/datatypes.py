@@ -293,7 +293,7 @@ class DateDataType(BaseDataType):
 
         return errors
     
-    def process_mobile_dates(self, node_value):
+    def process_mobile_dates(node_value):
         print('date processing')
         errors = []
         if node_value is not None:
