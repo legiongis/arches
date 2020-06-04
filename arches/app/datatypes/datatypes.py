@@ -267,7 +267,7 @@ class DateDataType(BaseDataType):
                         valid = False    
         if valid == False:
             # attempt further parsing if passed timezone data from collector
-            parsed = parse_datetime(value)
+            parsed = parse_datetime(str(value))
             # logger.debug(_('%s' % parsed))
             parsed = parsed.replace(tzinfo=None)
             # logger.debug(_('%s' % parsed))
@@ -307,7 +307,7 @@ class DateDataType(BaseDataType):
                     valid = True
             except:
                 valid = False      
-            
+            parsed = str(parsed)
         return parsed
     
     def transform_import_values(self, value, nodeid):
