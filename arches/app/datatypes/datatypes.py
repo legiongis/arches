@@ -20,7 +20,7 @@ from arches.app.search.elasticsearch_dsl_builder import Bool, Match, Range, Term
 from arches.app.search.search_engine_factory import SearchEngineFactory
 from django.core.cache import cache
 from django.core.files.base import ContentFile
-from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_date, parse_datetime
 from django.utils.translation import ugettext as _
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.gis.geos import GeometryCollection
