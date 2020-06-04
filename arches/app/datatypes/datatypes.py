@@ -303,8 +303,8 @@ class DateDataType(BaseDataType):
             if valid == False:
                 parsed = parse_datetime(node_value)
                 if "tzinfo" in parsed:
-                parsed = parsed.replace(tzinfo=None)
-                parsed = datetime.strftime(parsed, "%Y-%m-%d")
+                    parsed = parsed.replace(tzinfo=None)
+                    parsed = datetime.strftime(parsed, "%Y-%m-%d")
         return parsed
     
     def transform_import_values(self, value, nodeid):
