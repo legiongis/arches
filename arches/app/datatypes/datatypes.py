@@ -1251,6 +1251,23 @@ class FileListDataType(BaseDataType):
         # Currently up in the air about how best to do file imports via JSON-LD
         pass
 
+    def process_mobile_dates(self, node_value):
+        print('date processing')
+        errors = []
+        if value is not None:
+            valid = False
+            parsed = parse_datetime(node_value)
+            logger.debug(_('%s' % parsed))
+            parsed = parsed.replace(tzinfo=None)
+            logger.debug(_('%s' % parsed))
+            try:
+                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                    valid = True
+            except:
+                valid = False      
+            
+        return parsed
+    
     def process_mobile_data(self, tile, node, db, couch_doc, node_value):
         """
         Takes a tile, couch db instance, couch record, and the node value from
@@ -1278,23 +1295,6 @@ class FileListDataType(BaseDataType):
         except KeyError as e:
             pass        
         return node_value
-
-    def process_mobile_dates(self, node_value):
-        print('date processing')
-        errors = []
-        if value is not None:
-            valid = False
-            parsed = parse_datetime(node_value)
-            logger.debug(_('%s' % parsed))
-            parsed = parsed.replace(tzinfo=None)
-            logger.debug(_('%s' % parsed))
-            try:
-                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
-                    valid = True
-            except:
-                valid = False      
-            
-        return parsed
     
     def collects_multiple_values(self):
         return True

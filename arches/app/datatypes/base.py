@@ -46,17 +46,17 @@ class BaseDataType(object):
         """
         return None
 
+    def process_mobile_dates(self, node_value):
+        """
+        Parses UTC dates from mobile device to an Arches friendly format w/o timezones
+        """
+        return value
+    
     def process_mobile_data(self, tile, node, db, couch_doc, node_value):
         """
         Transforms data from a mobile device to an Arches friendly format
         """
         return None
-
-    def process_mobile_dates(self, node_value):
-        """
-        Parses UTC dates from mobile device to an Arches friendly format w/o timezones
-        """
-        return node_value
     
     def get_map_layer(self, node=None):
         """
