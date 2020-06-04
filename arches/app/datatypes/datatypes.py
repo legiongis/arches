@@ -306,7 +306,8 @@ class DateDataType(BaseDataType):
                         valid = False    
                 if valid == False:
                     parsed = parse_datetime(node_value)
-                    parsed = parsed.replace(tzinfo=None)
+                    if "tzinfo" in parsed:
+                        parsed = parsed.replace(tzinfo=None)
                 parsed = datetime.strftime(parsed, "%Y-%m-%d")
         return parsed
     
