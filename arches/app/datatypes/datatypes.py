@@ -307,7 +307,6 @@ class DateDataType(BaseDataType):
                     valid = True
             except:
                 valid = False      
-            parsed = str(parsed)
         return parsed
     
     def transform_import_values(self, value, nodeid):
