@@ -297,7 +297,7 @@ class DateDataType(BaseDataType):
         if node_value is not None:
             date_format = "%Y-%m-%d"
             valid = False
-             try:
+            try:
                 if datetime.strptime(node_value, date_format):
                     valid = True
                     parsed = node_value
