@@ -297,15 +297,18 @@ class DateDataType(BaseDataType):
         if node_value is not None:
             date_format = "%Y-%m-%d"
             valid = False
-            if datetime.strptime(node_value, date_format):
-                valid = True
-                parsed = node_value
+             try:
+                if datetime.strptime(node_value, date_format):
+                    valid = True
+                    parsed = node_value
+            except:
+                valid = False
             if valid == False:
                 parsed = parse_datetime(node_value)
-                if "tzinfo" in parsed:
-                    parsed = parsed.replace(tzinfo=None)
-                    parsed = datetime.strftime(parsed, "%Y-%m-%d")
+                parsed = parsed.replace(tzinfo=None)
+                parsed = datetime.strftime(parsed, "%Y-%m-%d")
         return parsed
+
     
     def transform_import_values(self, value, nodeid):
         if type(value) == list:
