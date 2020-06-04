@@ -298,12 +298,12 @@ class DateDataType(BaseDataType):
         errors = []
         if node_value is not None:
             valid = False
-            parsed = parse_datetime(node_value)
+            parsed = parse_date(node_value)
             logger.debug(_('%s' % parsed))
-            parsed = parsed.replace(tzinfo=None)
-            logger.debug(_('%s' % parsed))
+            # parsed = parsed.replace(tzinfo=None)
+            # logger.debug(_('%s' % parsed))
             try:
-                if datetime.strptime(str(parsed), "%Y-%m-%d %H:%M:%S"):
+                if datetime.strptime(str(parsed), "%Y-%m-%d"):
                     valid = True
             except:
                 valid = False      
