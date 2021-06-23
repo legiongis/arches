@@ -473,8 +473,15 @@ class ResourceEditLogView(BaseManagerView):
             recent_edits = (
                 models.EditLog.objects.all()
                 .exclude(resourceclassid=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID)
-                .order_by("-timestamp")[:100]
+                .order_by("-timestamp")
             )
+
+            # only show users their own edits, unless user is superuser
+            if not request.user.is_superuser:
+                recent_edits = recent_edits.filter(user_username=request.user.username)
+
+            recent_edits = recent_edits[:1000]
+
             edited_ids = list({edit.resourceinstanceid for edit in recent_edits})
             resources = Resource.objects.filter(resourceinstanceid__in=edited_ids)
             edit_type_lookup = {
