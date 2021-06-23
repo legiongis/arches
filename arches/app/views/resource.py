@@ -464,7 +464,7 @@ class ResourceEditLogView(BaseManagerView):
             if not request.user.is_superuser:
                 recent_edits = recent_edits.filter(user_username=request.user.username)
 
-            recent_edits = recent_edits[:100]
+            recent_edits = recent_edits[:1000]
 
             edited_ids = list({edit.resourceinstanceid for edit in recent_edits})
             resources = Resource.objects.filter(resourceinstanceid__in=edited_ids)
