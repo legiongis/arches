@@ -41,6 +41,7 @@ class Command(BaseCommand):
                 "register",
                 "update",
                 "unregister",
+                "import",
             ]
         )
         parser.add_argument(
@@ -98,3 +99,7 @@ class Command(BaseCommand):
         if operation == "unregister":
             print(f"UNREGISTER {em.extension_type} | {options['name']}\n")
             em.unregister(options["name"])
+
+        if operation == "import":
+            print(f"IMPORT {em.extension_type} | {options['source']}\n")
+            em.import_from_directory(options["source"], overwrite=options["overwrite"])

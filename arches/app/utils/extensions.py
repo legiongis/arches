@@ -1,8 +1,10 @@
 import os
 import uuid
 import json
+import shutil
 import importlib.util
 from django.core import serializers
+from arches.app.models.system_settings import settings
 from arches.app.models.models import (
     CardComponent,
     DDataType,
@@ -12,6 +14,7 @@ from arches.app.models.models import (
     SearchComponent,
     Widget,
 )
+
 
 class ExtensionManager():
 
@@ -100,7 +103,7 @@ class ExtensionManager():
         ## some extra work on the details...
         ## stuff like this, if there's a lot more of it, could be gathered in
         ## a self.sanitize_details() method or something.
-        if self.extension_type in ["datatype", "function"]:
+        if self.extension_type in ["datatype", "function", "search"]:
             details["modulename"] = os.path.basename(source_path)
         if self.extension_type == "datatype":
             details["issearchable"] = details.get("issearchable", False)
@@ -322,3 +325,50 @@ This {self.extension_type} is not registered. List registered {self.extension_ty
 
     python manage.py extension {self.extension_type} list
 """)
+
+    def import_from_directory(self, source_path, overwrite=False):
+
+        extension_dir = f"{self.extension_type}s"
+        dest_lookup = {
+            ".htm": os.path.join(settings.APP_ROOT, "templates", "views", "components", extension_dir),
+            ".js": os.path.join(settings.APP_ROOT, "media", "js", "views", "components", extension_dir),
+            ".py": os.path.join(settings.APP_ROOT, extension_dir),
+            ".json": os.path.join(settings.APP_ROOT, extension_dir),
+        }
+        content = {}
+        for f in os.listdir(source_path):
+            ext = os.path.splitext(f)[1]
+            if not ext in [".htm", ".js", ".py", ".json"]:
+                continue
+            content[ext] = {
+                "source": os.path.join(source_path, f),
+                "dest": os.path.join(dest_lookup[ext], f)
+            }
+
+        if self.extension_type in ["datatype", "function", "search"]:
+            details_file = content.get(".py")
+        else:
+            details_file = content.get(".json")
+        if details_file is None:
+            msg = "Incomplete extension. No config file found."
+            if self.raise_errors:
+                raise(OSError(msg))
+            else:
+                print(msg)
+                exit()
+
+        # load the details now to make sure they don't cause an error
+        self.load_source(details_file["source"])
+
+        # now copy all files to appropriate locations
+        for file_to_copy in content.values():
+            if os.path.isfile(file_to_copy["dest"]) and overwrite is False:
+                if self.raise_errors:
+                    raise(OSError("Corresponding extension files already exist in project. Use overwrite=True to replace them."))
+                else:
+                    print("Corresponding extension files already exist in project. Use --overwrite to replace them.")
+                    exit()
+            shutil.copy(file_to_copy["source"], file_to_copy["dest"])
+
+        # finish by registering the extension
+        self.register(overwrite=overwrite)
