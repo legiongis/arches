@@ -288,6 +288,7 @@ This {self.extension_type} is not registered. Register it with
             instance.component = self.details["component"]
             instance.componentname = self.details["componentname"]
             instance.config = self.details["config"]
+            instance.slug = self.details["slug"]
         elif self.extension_type == "report":
             if self.raise_errors:
                 raise(NotImplementedError)
@@ -368,6 +369,8 @@ This {self.extension_type} is not registered. List registered {self.extension_ty
                 else:
                     print("Corresponding extension files already exist in project. Use --overwrite to replace them.")
                     exit()
+            if not os.path.isdir(os.path.dirname(file_to_copy["dest"])):
+                os.mkdir(os.path.dirname(file_to_copy["dest"]))
             shutil.copy(file_to_copy["source"], file_to_copy["dest"])
 
         # finish by registering the extension
