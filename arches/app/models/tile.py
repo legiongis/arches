@@ -402,25 +402,27 @@ class Tile(models.TileModel):
             user = {} if user is None else user
             self.datatype_post_save_actions(request)
             self.__postSave(request)
-            if creating_new_tile is True:
-                self.save_edit(
-                    user=user,
-                    edit_type=edit_type,
-                    old_value={},
-                    new_value=self.data,
-                    newprovisionalvalue=newprovisionalvalue,
-                    provisional_edit_log_details=provisional_edit_log_details,
-                )
-            else:
-                self.save_edit(
-                    user=user,
-                    edit_type=edit_type,
-                    old_value=existing_model.data,
-                    new_value=self.data,
-                    newprovisionalvalue=newprovisionalvalue,
-                    oldprovisionalvalue=oldprovisionalvalue,
-                    provisional_edit_log_details=provisional_edit_log_details,
-                )
+
+            if log is True:
+                if creating_new_tile is True:
+                    self.save_edit(
+                        user=user,
+                        edit_type=edit_type,
+                        old_value={},
+                        new_value=self.data,
+                        newprovisionalvalue=newprovisionalvalue,
+                        provisional_edit_log_details=provisional_edit_log_details,
+                    )
+                else:
+                    self.save_edit(
+                        user=user,
+                        edit_type=edit_type,
+                        old_value=existing_model.data,
+                        new_value=self.data,
+                        newprovisionalvalue=newprovisionalvalue,
+                        oldprovisionalvalue=oldprovisionalvalue,
+                        provisional_edit_log_details=provisional_edit_log_details,
+                    )
 
             if index:
                 self.index()
