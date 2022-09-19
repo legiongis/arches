@@ -46,9 +46,7 @@ class Command(BaseCommand):
         self.help = self.__doc__
 
     def add_arguments(self, parser):
-
         parser.formatter_class = ArchesHelpTextFormatter
-
         parser.add_argument(
             "operation",
             choices=[
@@ -66,7 +64,6 @@ class Command(BaseCommand):
             {s.req('deactivate')}: Deactivate this extension but don't unregister it (not available for all extension types, experimental) (provide {s.opt('-n/--name')}).
             """
         )
-
         parser.add_argument(
             "extension_type",
             choices=[
@@ -83,17 +80,14 @@ class Command(BaseCommand):
             Specify what type of extension you are managing.
             """
         )
-
         parser.add_argument(
             "-s", "--source",
             help=f"Use with {s.req('register')} to provide a JSON or .py file when registering an extension.",
         )
-
         parser.add_argument(
             "-n", "--name",
             help=f"Use with {s.req('unregister')} for the name of the extension to remove."
         )
-
         parser.add_argument(
             "--overwrite",
             action="store_true",
@@ -108,24 +102,7 @@ class Command(BaseCommand):
         # the list operation only makes sense in the context of the CLI,
         # so all code sits here, not in the manager.
         if options["operation"] == "list":
-            try:
-                instances = manager.model.objects.all()
-                for n, instance in enumerate(instances, start=1):
-                    if ex == "datatype":
-                        name = instance.datatype
-                    else:
-                        name = instance.name
-                    if ex in ["etl-module", "plugin"]:
-                        name += f" ({'active' if instance.config['show'] is True else 'inactive'})"
-                    # getting really carried away here
-                    # name = s.req(name)
-                    # if n % 2 == 0:
-                    #     name = s.invert(name)
-                    print(name)
-                print(f"---\nregistered {ex} count: {instances.count()}")
-            except Exception as e:
-                print(s.error(e))
-                raise e
+            manager.print_list()
 
         if options["operation"] == "register":
             print(f"Register {ex}: {options['source']} (overwrite = {options['overwrite']}")

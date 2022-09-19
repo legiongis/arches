@@ -8,6 +8,7 @@ from django.db import transaction
 from django.contrib.gis.db.models import UUIDField
 
 from arches.app.models import models
+from arches.cli.utils import ArchesCLIStyles
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class ExtensionManager():
 
     def _ensure_valid_uuid_pk(self, details):
 
-        if isinstance(UUIDField, self.model._meta.pk):
+        if isinstance(self.model._meta.pk, UUIDField):
             val = details.get(self.model._meta.pk.name)
             try:
                 uuid.UUID(val)
@@ -79,7 +80,7 @@ class ExtensionManager():
                 instance = self.model.objects.get(name=name)
             return instance
         except self.model.DoesNotExist:
-            raise Exception(f"Can't find {self.extension_type}, {name}")
+            raise Exception(f"Can't find {self.extension_type}: {name}")
 
     def register(self, source, overwrite=False):
         """
@@ -94,15 +95,14 @@ class ExtensionManager():
         pk_qry = {self.model._meta.pk.name: pk_val}
 
         with transaction.atomic():
-            if overwrite is True:
-                instance, created = self.model.objects.get_or_create(**pk_qry)
+            if overwrite is True and self.model.objects.filter(**pk_qry).exists():
+                instance = self.model.objects.get(**pk_qry)
             else:
                 try:
-                    instance = self.model.objects.create(**pk_qry)
+                    instance = self.model(**pk_qry)
                 except Exception as e:
                     print(e)
-                    raise Exception(f"{self.extension_type} {pk_val} already exists. "\
-                        "Use overwrite to update its attributes with the input source.")
+                    raise e
 
             # some extensions are irregular and the details need to be altered a little bit
             # before they can be saved to the instance. Generally these attribute definitions
@@ -149,3 +149,22 @@ class ExtensionManager():
             instance.save()
         else:
             logger.warn(f"This operation not supported for {self.extension_type}.")
+
+    def print_list(self):
+        s = ArchesCLIStyles()
+        try:
+            instances = self.model.objects.all()
+            for n, instance in enumerate(instances, start=1):
+                if self.extension_type == "datatype":
+                    name = instance.datatype
+                else:
+                    name = instance.name
+                if self.extension_type in ["etl-module", "plugin"]:
+                    name += f" ({'active' if instance.config['show'] is True else 'inactive'})"
+                if self.extension_type in ["search-filter"]:
+                    name += f" ({'active' if instance.enabled is True else 'inactive'})"
+                print(name)
+            print(f"---\nregistered {self.extension_type} count: {instances.count()}")
+        except Exception as e:
+            print(s.error(e))
+            raise e
