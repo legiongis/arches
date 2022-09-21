@@ -38,6 +38,10 @@ class Command(BaseCommand):
             opts = {}
             for i in options['opts']:
                 k, v = i.split("=")
+                if v == "True":
+                    v = True
+                elif v == "False":
+                    v = False
                 opts[k] = v
         except Exception as e:
             print(s.error(options['opts']))
