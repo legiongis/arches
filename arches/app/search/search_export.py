@@ -110,6 +110,10 @@ class SearchResultsExporter(object):
                 for card_node_object in card_node_objects:
                     if card_node_object.node.datatype != "semantic":
                         nodes_in_card.append(card_node_object)
+                # need to force sortorder because apparently not all nodes have it in HMS - AC 2022-90-28
+                for i in nodes_in_card:
+                    if i.sortorder is None:
+                        i.sortorder = 0
                 node_object_list_sorted = sorted(nodes_in_card, key=lambda x: x.sortorder)
                 for sorted_node_object in node_object_list_sorted:
                     ordered_list_all_nodes.append(sorted_node_object)
