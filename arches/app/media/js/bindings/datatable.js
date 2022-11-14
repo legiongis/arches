@@ -27,8 +27,8 @@ define([
         init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             const options = ko.unwrap(valueAccessor());
             ko.unwrap(options.data);
-            if (valueAccessor().serverSide === true) {
-                const table = $(element).closest('table').DataTable(valueAccessor().dataTableOptions);
+            if (options.dataTableOptions.serverSide === true) {
+                const table = $(element).closest('table').DataTable(options.dataTableOptions);
                 table.destroy();
             }
             else {
