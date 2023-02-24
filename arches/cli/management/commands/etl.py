@@ -1,3 +1,5 @@
+import json
+
 from django.core.management.base import BaseCommand, CommandError
 
 from arches.cli.managers import ExtensionManager
@@ -73,4 +75,7 @@ class Command(BaseCommand):
             exit()
         
         result = method(**kwargs)
-        print(result)
+        if isinstance(result, dict):
+            print(json.dumps(result, indent=2))
+        else:
+            print(result)

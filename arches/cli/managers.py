@@ -159,10 +159,13 @@ class ExtensionManager():
                     name = instance.datatype
                 else:
                     name = instance.name
+                # for certain extension types that can be disabled, prepend name with status
+                active_str = f"{s.fg.green}active{s.reset}"
+                inactive_str = f"{s.fg.red}inactive{s.reset}"
                 if self.extension_type in ["etl-module", "plugin"]:
-                    name += f" ({'active' if instance.config['show'] is True else 'inactive'})"
+                    name = f"{active_str if instance.config['show'] is True else inactive_str} {name}"
                 if self.extension_type in ["search-filter"]:
-                    name += f" ({'active' if instance.enabled is True else 'inactive'})"
+                    name = f"{active_str if instance.enabled is True else inactive_str} {name}"
                 print(name)
             print(f"---\nregistered {self.extension_type} count: {instances.count()}")
         except Exception as e:
