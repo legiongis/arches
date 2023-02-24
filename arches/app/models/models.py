@@ -39,6 +39,7 @@ from guardian.shortcuts import assign_perm
 # so make sure the only settings we use in this file are ones that are static (fixed at run time)
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
 
 class BulkIndexQueue(models.Model):
     resourceinstanceid = models.UUIDField(primary_key=True, unique=True)
@@ -1286,16 +1287,20 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User)
 def create_permissions_for_new_users(sender, instance, created, **kwargs):
     from arches.app.models.resource import Resource
-
-    if created:
-        ct = ContentType.objects.get(app_label="models", model="resourceinstance")
-        resourceInstanceIds = list(GroupObjectPermission.objects.filter(content_type=ct).values_list("object_pk", flat=True).distinct())
-        for resourceInstanceId in resourceInstanceIds:
-            resourceInstanceId = uuid.UUID(resourceInstanceId)
-        resources = ResourceInstance.objects.filter(pk__in=resourceInstanceIds)
-        assign_perm("no_access_to_resourceinstance", instance, resources)
-        for resource in resources:
-            Resource(resource.resourceinstanceid).index()
+    logger.info("creating permissions for new user")
+    try:
+        if created:
+            ct = ContentType.objects.get(app_label="models", model="resourceinstance")
+            resourceInstanceIds = list(GroupObjectPermission.objects.filter(content_type=ct).values_list("object_pk", flat=True).distinct())
+            for resourceInstanceId in resourceInstanceIds:
+                resourceInstanceId = uuid.UUID(resourceInstanceId)
+            resources = ResourceInstance.objects.filter(pk__in=resourceInstanceIds)
+            assign_perm("no_access_to_resourceinstance", instance, resources)
+            for resource in resources:
+                Resource.objects.get(pk=resource.resourceinstanceid).index()
+            logger.info("permissions created successfully")
+    except Exception as e:
+        logger.error(f"error occurred during permissions creation: {e}")
 
 
 class UserXTask(models.Model):
