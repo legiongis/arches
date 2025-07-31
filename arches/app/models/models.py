@@ -1435,7 +1435,11 @@ def send_email_on_save(sender, instance, **kwargs):
             else:
                 email_to = context["email"]
             subject, from_email, to = instance.notif.notiftype.name, settings.DEFAULT_FROM_EMAIL, email_to
-            msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+            if isinstance(to, list):
+                email_list = to
+            else:
+                email_list = [to]
+            msg = EmailMultiAlternatives(subject, text_content, from_email, email_list)
             msg.attach_alternative(html_content, "text/html")
             msg.send()
             if instance.notif.notiftype.webnotify is not True:
