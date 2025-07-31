@@ -81,11 +81,14 @@ class ETLManagerView(View):
         instantiate the proper module with proper action and pass the request
         possible actions are "import", "validate", "return first line", ""
         """
-        action = request.POST.get("action")
-        moduleid = request.POST.get("module")
-        import_module = ETLModule.objects.get(pk=moduleid).get_class_module()(request)
-        import_function = getattr(import_module, action)
-        response = import_function(request=request)
+        try:
+            action = request.POST.get("action")
+            moduleid = request.POST.get("module")
+            import_module = ETLModule.objects.get(pk=moduleid).get_class_module()(request)
+            import_function = getattr(import_module, action)
+            response = import_function(request=request)
+        except Exception as e:
+            logger.error(e)
         if response["success"] and "raw" not in response:
             ret = {"result": response["data"]}
             return JSONResponse(ret)

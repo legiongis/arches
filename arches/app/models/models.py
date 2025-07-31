@@ -1447,6 +1447,7 @@ def send_email_on_save(sender, instance, **kwargs):
                 instance.save()
         except Exception as e:
             logger = logging.getLogger(__name__)
+            logger.warn(e)
             logger.warn("Email Server not correctly set up. See settings to configure.")
 
     return False
