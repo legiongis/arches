@@ -96,7 +96,7 @@ def export_search_results(self, userid, request_values, format, report_link):
             closing=_("Thank you"),
             email=email,
             name=export_name,
-            email_link=str(settings.ARCHES_NAMESPACE_FOR_DATA_EXPORT).rstrip("/") + "/files/" + str(search_history_obj.downloadfile),
+            email_link=str(settings.MEDIA_URL).rstrip("/") + "/" + str(search_history_obj.downloadfile),
         ),
     }
 
