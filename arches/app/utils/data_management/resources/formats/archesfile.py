@@ -162,6 +162,7 @@ class ArchesFileReader(Reader):
                                 "resourceinstance": resourceinstance,
                                 "parenttile_id": str(src_tile["parenttile_id"]) if src_tile["parenttile_id"] else None,
                                 "nodegroup_id": str(src_tile["nodegroup_id"]) if src_tile["nodegroup_id"] else None,
+                                "sortorder": int(src_tile["sortorder"]) if src_tile["sortorder"] else 0,
                                 "data": src_tile["data"],
                             }
                             new_values = {"tileid": uuid.UUID(str(src_tile["tileid"]))}
@@ -180,6 +181,7 @@ class ArchesFileReader(Reader):
                                 reporter.update_tiles_saved()
 
                             for child in src_tile["tiles"]:
+                                #print(child)
                                 update_or_create_tile(child)
 
                         for tile in resource["tiles"]:
