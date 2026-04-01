@@ -121,6 +121,10 @@ define([
             }
         };
 
+        self.getParams = function() {
+            return _.extend(self.rootnode, {isEditable: true})
+        }
+
     };
     return GraphSettingsViewModel;
 });

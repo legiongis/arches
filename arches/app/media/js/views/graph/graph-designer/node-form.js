@@ -79,6 +79,10 @@ define([
                 return isImmutable;
             };
 
+            this.getParams = function() {
+                return _.extend(self.node(), {isEditable: !self.checkIfImmutable()})
+            }
+
             this.toggleRequired = function() {
                 var isImmutable = self.checkIfImmutable();
                 if (isImmutable === false) {
