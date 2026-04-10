@@ -368,7 +368,7 @@ class Tile(models.TileModel):
         new_resource_created = kwargs.pop("new_resource_created", False)
         context = kwargs.pop("context", None)
         transaction_id = kwargs.pop("transaction_id", None)
-        edit_log_entry = kwargs.get("edit_log_entry", True)
+        edit_log_entry = kwargs.pop("edit_log_entry", True)
         provisional_edit_log_details = kwargs.pop("provisional_edit_log_details", None)
         creating_new_tile = True
         user_is_reviewer = False
