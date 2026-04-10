@@ -151,6 +151,12 @@ MANAGERS = ADMINS
 
 RESOURCE_EDITOR_GROUPS = ("Resource Editor", "Crowdsource Editor")
 
+# Set to False if you don't want your application to use provisional editing at
+# all. All editor users will be treated as Resource Reviewers. If set False, you
+# must also make sure to run the following command to disable the Q/A search UI
+#     python manage.py search unregister -n provisional-filter
+ENABLE_PROVISIONAL_EDITING = True
+
 # Unique session cookie ensures that logins are treated separately for each app
 SESSION_COOKIE_NAME = "arches"
 

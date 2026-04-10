@@ -441,7 +441,12 @@ def user_is_resource_reviewer(user):
     Single test for whether a user is in the Resource Reviewer group
     """
 
-    return user.groups.filter(name="Resource Reviewer").exists()
+    # if provisional editing is not enabled, treat all users as resource reviewers
+    if settings.ENABLE_PROVISIONAL_EDITING is False:
+        return True
+    # otherwise check for group membership
+    else:
+        return user.groups.filter(name='Resource Reviewer').exists()
 
 
 def user_created_transaction(user, transactionid):
