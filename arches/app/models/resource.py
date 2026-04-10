@@ -136,6 +136,7 @@ class Resource(models.ResourceInstance):
         index = kwargs.pop("index", True)
         context = kwargs.pop("context", None)
         transaction_id = kwargs.pop("transaction_id", None)
+        new_resource = self.createdtime is None
         super(Resource, self).save(*args, **kwargs)
         for tile in self.tiles:
             tile.resourceinstance_id = self.resourceinstanceid
@@ -152,7 +153,8 @@ class Resource(models.ResourceInstance):
         except NotUserNorGroup:
             pass
 
-        self.save_edit(user=user, edit_type="create", transaction_id=transaction_id)
+        if new_resource:
+            self.save_edit(user=user, edit_type="create", transaction_id=transaction_id)
         if index is True:
             self.index(context)
 

@@ -368,6 +368,7 @@ class Tile(models.TileModel):
         new_resource_created = kwargs.pop("new_resource_created", False)
         context = kwargs.pop("context", None)
         transaction_id = kwargs.pop("transaction_id", None)
+        edit_log_entry = kwargs.get("edit_log_entry", True)
         provisional_edit_log_details = kwargs.pop("provisional_edit_log_details", None)
         creating_new_tile = True
         user_is_reviewer = False
@@ -433,28 +434,29 @@ class Tile(models.TileModel):
             self.ensure_userprofile_exists(request)
             self.datatype_post_save_actions(request)
             self.__postSave(request, context=context)
-            if creating_new_tile is True:
-                self.save_edit(
-                    user=user,
-                    edit_type=edit_type,
-                    old_value={},
-                    new_value=self.data,
-                    newprovisionalvalue=newprovisionalvalue,
-                    provisional_edit_log_details=provisional_edit_log_details,
-                    transaction_id=transaction_id,
-                    new_resource_created=new_resource_created,
-                )
-            else:
-                self.save_edit(
-                    user=user,
-                    edit_type=edit_type,
-                    old_value=existing_model.data,
-                    new_value=self.data,
-                    newprovisionalvalue=newprovisionalvalue,
-                    oldprovisionalvalue=oldprovisionalvalue,
-                    provisional_edit_log_details=provisional_edit_log_details,
-                    transaction_id=transaction_id,
-                )
+            if edit_log_entry:
+                if creating_new_tile is True:
+                    self.save_edit(
+                        user=user,
+                        edit_type=edit_type,
+                        old_value={},
+                        new_value=self.data,
+                        newprovisionalvalue=newprovisionalvalue,
+                        provisional_edit_log_details=provisional_edit_log_details,
+                        transaction_id=transaction_id,
+                        new_resource_created=new_resource_created,
+                    )
+                else:
+                    self.save_edit(
+                        user=user,
+                        edit_type=edit_type,
+                        old_value=existing_model.data,
+                        new_value=self.data,
+                        newprovisionalvalue=newprovisionalvalue,
+                        oldprovisionalvalue=oldprovisionalvalue,
+                        provisional_edit_log_details=provisional_edit_log_details,
+                        transaction_id=transaction_id,
+                    )
 
             if index:
                 self.index()
