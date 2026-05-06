@@ -23,11 +23,13 @@
 
             <!-- Inline Filters (for QA and Resource Type) -->
             <div class="search-inline-filters">
+                <!-- HMSF-MD disable provisional filter
                     <div class="qa-filter" data-bind="visible: sharedStateObject.userIsReviewer() !== false,
                     component: {
                         name: 'provisional-filter',
                         params: sharedStateObject
                     }"></div>
+                -->
                 <div class="resource-filter" data-bind="component: {
                     name: 'resource-type-filter',
                     params: sharedStateObject
