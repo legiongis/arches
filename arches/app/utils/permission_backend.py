@@ -338,7 +338,6 @@ def user_is_resource_editor(user):
 def user_is_resource_reviewer(user):
     # if provisional editing is not enabled, treat all users as resource reviewers
     if settings.ENABLE_PROVISIONAL_EDITING is False:
-        print(user, "prov editing disabled")
         return True
     return _get_permission_framework().user_is_resource_reviewer(user)
 
