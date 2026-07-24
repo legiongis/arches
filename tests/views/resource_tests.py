@@ -24,6 +24,7 @@ from tests.base_test import ArchesTestCase
 from django.db import connection
 from django.urls import reverse
 from arches.app.models.models import EditLog, Graph
+from arches.app.models.models import ResourceInstance
 from arches.app.models.resource import Resource
 from arches.app.models.tile import Tile
 from tests.utils.search_test_utils import sync_es
