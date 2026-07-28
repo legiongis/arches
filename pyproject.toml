@@ -14,7 +14,7 @@ requires-python = ">=3.12"
 description = "Arches is an open-source, web-based, geospatial information system for cultural heritage inventory and management."
 keywords = ["django", "arches", "cultural heritage"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Information Technology",
@@ -71,7 +71,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black==24.4.2",
+    "black==26.3.1",
     "coverage",
     "django-silk==5.4.3",
     "livereload",
@@ -93,6 +93,7 @@ exclude = ["*.tests", "*.tests.*", "tests.*", "tests"]
 namespaces = false
 
 [tool.black]
+target-version = ["py311", "py312", "py313", "py314"]
 include = '\.pyi?$'
 exclude = '''
 /(
