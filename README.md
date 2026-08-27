@@ -6,13 +6,12 @@ For general inquiries and to get technical support from the wider Arches communi
 
 For general user installation and app documentation, visit [arches.readthedocs.io](https://arches.readthedocs.io).
 
-For the documentation pertaining to the bleeding edge code (what is in the ``master`` branch), visit [arches.readthedocs.io/en/latest](https://arches.readthedocs.io/en/latest).  We welcome new contributors; please see [Contributing to Arches](CONTRIBUTING.md) for details.
+For the documentation pertaining to the version under development, visit [arches.readthedocs.io/en/latest](https://arches.readthedocs.io/en/latest).  We welcome new contributors; please see [Contributing to Arches](CONTRIBUTING.md) for details.
 
 Issue reports are encouraged! [Please read this article](http://polite.technology/reportabug.html) before reporting issues.
 *   [Report a Bug](https://github.com/archesproject/arches/issues/new?template=bug.md)
 *   [File a Feature Ticket](https://github.com/archesproject/arches/issues/new?template=feature.md)
 
-[Version 7.5.0 release notes](https://github.com/archesproject/arches/blob/stable/7.5.0/releases/7.5.0.md)
 
 #### Quick Install
 
@@ -22,7 +21,7 @@ Installation is fully documented in the official documentation, [arches.readthed
 ```
 then
 ```
-    arches-project create myproject
+    arches-admin startproject myproject
 ```
 enter the new `myproject` directory
 ```
@@ -39,7 +38,7 @@ in a separate terminal, activate your virtual environment and navigate to the ro
 ```
 and run
 ```   
-    yarn build_development
+    npm run build_development
 ```
 to create a frontend asset bundle. This process should complete in less than 2 minutes.
 
@@ -49,41 +48,14 @@ If you run into problems, please review our full [installation documentation](ht
 
 #### Release Cycle
 
-Our general release cycle will typically be a functional release (either major if there are backward incompatible changes or minor, if there are not) every 6 months. Each functional release will typically be followed by one or more patch releases. See [semver.org](https://semver.org/) for version numbering.
+Our general release cycle will typically be a functional release (either major if there are backward incompatible changes or minor, if there are not) every 9 months. Each functional release will typically be followed by one or more patch releases. See [semver.org](https://semver.org/) for version numbering.
 
 -   Functional releases will usually introduce new functionality to the application, but could also include styling updates, enhancements to the UX, bug fixes, and performance improvements.
 -   Patch releases are really only concerned with fixing any bugs related to the previous release or any other issues not yet addressed
 
 #### Support for previous releases
 
-- Stable releases will be supported with patch releases for at least 18 months. Typically the stable release will be the second or third minor release of a major release. 
-- Functional releases (with the exception of stable releases) will be supported only until the next functional release. After that users are expected to upgrade to the latest release on [pypi.python.org](https://pypi.python.org/pypi/arches)
+- LTS (Long Term Support) releases will be maintained with patch releases for at least 27 months. Typically an LTS release will be the second minor release following a major release. 
+- Feature releases (with the exception of stable releases) will be supported only until the next feature release. After that users are expected to upgrade to the latest release on [pypi.python.org](https://pypi.python.org/pypi/arches)
 
-#### Feature roadmap
-
-The following a general plan for the Arches project. Be aware this plan is tentative and subject to change
-
-## 7.5 - Release date: December 15, 2023 
-- Continued accessibility improvements
-- Arches application support
-- Bulk Data Manager export
-- Bulk Data Manager deletion
-- Tile Excel format added to Bulk Data Manager
-- Improved Bulk Data Manager data edting
-- Workflow history tracking
-- Image configuration of file-list datatype
-- Performance Improvements
-- Support for compiling Vue components
-- Display of file thumbnails for formats other than images
-
-## 7.6 LTS - Release date: June 15, 2024
-- Activity stream edit logs
-- Security enhancements
-
-## 8.0 - Release date: December 15, 2024
-- Support for editing and publishing graphs (removing instance restrictions)
-- Support for viewing and restoring previous graph publications
-- Support for editing/localizing UI labels and permissions for published graphs
-- Business data migrations that correspond to graph changes
-- RDM Redesign
-
+#### For details regarding future releases, see the [feature roadmap](https://github.com/archesproject/arches-roadmap).

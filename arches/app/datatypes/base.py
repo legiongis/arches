@@ -14,7 +14,16 @@ class BaseDataType(object):
         self.datatype_model = model
         self.datatype_name = model.datatype if model else None
 
-    def validate(self, value, row_number=None, source=None, node=None, nodeid=None, strict=False, **kwargs):
+    def validate(
+        self,
+        value,
+        row_number=None,
+        source=None,
+        node=None,
+        nodeid=None,
+        strict=False,
+        **kwargs,
+    ):
         """
         Used to validate data in a node of given datatype
 
@@ -36,7 +45,9 @@ class BaseDataType(object):
         source_info = "{0} {1}".format(source, row_number) if row_number else ""
         error_message = {
             "type": "ERROR",
-            "message": _("{0} error, {1} {2} - {3}. Unable to save.").format(self.datatype_name, value, source_info, message),
+            "message": _("{0} error, {1} {2} - {3}. Unable to save.").format(
+                self.datatype_name, value, source_info, message
+            ),
             "title": title,
         }
         return error_message
@@ -78,6 +89,15 @@ class BaseDataType(object):
         """
         return value
 
+    def copy(self, value, **kwargs):
+        """
+        Allows for transformation of a value when copying a resource.
+        By default, the value is returned unchanged, but this can be overridden to allow
+        for transformations during copy operations
+        (eg: updating resource to resource records or duplicating files during copy)
+        """
+        return value
+
     def get_bounds(self, tile, node):
         """
         Gets the bounds of a geometry if the datatype is spatial
@@ -105,13 +125,22 @@ class BaseDataType(object):
         should be a dictionary including (as in map_sources table):
         name, source (json)
         """
-        tileserver_url = urllib.parse.unquote(reverse("mvt", args=(node.nodeid, "{z}", "{x}", "{y}")))
+        tileserver_url = urllib.parse.unquote(
+            reverse("mvt", args=(node.nodeid, "{z}", "{x}", "{y}"))
+        )
         if node is None:
             return None
         source_config = {"type": "vector", "tiles": [tileserver_url]}
+        node_config = json.loads(node.config.value)
+        for prop in ("minzoom", "maxzoom"):
+            if prop in node_config:
+                source_config[prop] = node_config[prop]
+
         count = None
         if preview == True:
-            count = models.TileModel.objects.filter(nodegroup_id=node.nodegroup_id, data__has_key=str(node.nodeid)).count()
+            count = models.TileModel.objects.filter(
+                nodegroup_id=node.nodegroup_id, data__has_key=str(node.nodeid)
+            ).count()
             if count == 0:
                 source_config = {
                     "type": "geojson",
@@ -121,12 +150,21 @@ class BaseDataType(object):
                             {
                                 "type": "Feature",
                                 "properties": {"total": 1},
-                                "geometry": {"type": "Point", "coordinates": [-122.4810791015625, 37.93553306183642]},
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [
+                                        -122.4810791015625,
+                                        37.93553306183642,
+                                    ],
+                                },
                             },
                             {
                                 "type": "Feature",
                                 "properties": {"total": 100},
-                                "geometry": {"type": "Point", "coordinates": [-58.30078125, -18.075412438417395]},
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates": [-58.30078125, -18.075412438417395],
+                                },
                             },
                             {
                                 "type": "Feature",
@@ -178,7 +216,12 @@ class BaseDataType(object):
                         ],
                     },
                 }
-        return {"nodeid": node.nodeid, "name": "resources-%s" % node.nodeid, "source": json.dumps(source_config), "count": count}
+        return {
+            "nodeid": node.nodeid,
+            "name": "resources-%s" % node.nodeid,
+            "source": json.dumps(source_config),
+            "count": count,
+        }
 
     def get_pref_label(self, nodevalue):
         """
@@ -200,14 +243,12 @@ class BaseDataType(object):
                 logger.warning(_("Multiple provisional edits. Returning first edit"))
             userid = list(provisionaledits.keys())[0]
             return provisionaledits[userid]["value"]
-        else:
+        elif not data:
             logger.exception(_("Tile has no authoritative or provisional data"))
+        else:
+            return data
 
-
-    def get_display_value(self, tile, node, **kwargs):
-        """
-        Returns a list of concept values for a given node
-        """
+    def get_display_value(self, tile, node, **kwargs) -> str:
         data = self.get_tile_data(tile)
 
         if data:
@@ -215,6 +256,7 @@ class BaseDataType(object):
 
             if display_value:
                 return str(display_value)
+        return ""  # TODO (arches_version): configure this with a setting in 8.1
 
     def get_search_terms(self, nodevalue, nodeid=None):
         """
@@ -273,7 +315,10 @@ class BaseDataType(object):
                                     return null_docs;
                                 """,
                                     "lang": "painless",
-                                    "params": {"node_id": f"{str(node.pk)}", "nodegroup_id": f"{str(node.nodegroup_id)}"},
+                                    "params": {
+                                        "node_id": f"{str(node.pk)}",
+                                        "nodegroup_id": f"{str(node.nodegroup_id)}",
+                                    },
                                 }
                             }
                         }
@@ -358,10 +403,22 @@ class BaseDataType(object):
         g.add((edge_info["d_uri"], RDF.type, URIRef(edge.domainnode.ontologyclass)))
 
         if edge_info["domain_tile_data"] is not None:
-            g.add((edge_info["d_uri"], RDF.value, Literal(JSONSerializer().serialize(edge_info["domain_tile_data"]))))
+            g.add(
+                (
+                    edge_info["d_uri"],
+                    RDF.value,
+                    Literal(JSONSerializer().serialize(edge_info["domain_tile_data"])),
+                )
+            )
 
         if edge_info["range_tile_data"] is not None:
-            g.add((edge_info["r_uri"], RDF.value, Literal(JSONSerializer().serialize(edge_info["range_tile_data"]))))
+            g.add(
+                (
+                    edge_info["r_uri"],
+                    RDF.value,
+                    Literal(JSONSerializer().serialize(edge_info["range_tile_data"])),
+                )
+            )
 
         return g
 
@@ -377,6 +434,13 @@ class BaseDataType(object):
         """
 
         return False
+
+    def get_nodevalues(self, nodevalue):
+        if nodevalue is None:
+            return []
+        elif not isinstance(nodevalue, (list, tuple)):
+            return [nodevalue]
+        return nodevalue
 
     def ignore_keys(self):
         """
@@ -402,7 +466,10 @@ class BaseDataType(object):
         Default mapping if not specified is a text field
         """
 
-        text_mapping = {"type": "text", "fields": {"keyword": {"ignore_above": 256, "type": "keyword"}}}
+        text_mapping = {
+            "type": "text",
+            "fields": {"keyword": {"ignore_above": 256, "type": "keyword"}},
+        }
         return text_mapping
 
     def get_es_mapping(self, nodeid):
@@ -417,7 +484,9 @@ class BaseDataType(object):
                 "properties": {
                     "tiles": {
                         "type": "nested",
-                        "properties": {"data": {"properties": {str(nodeid): default_mapping}}},
+                        "properties": {
+                            "data": {"properties": {str(nodeid): default_mapping}}
+                        },
                     }
                 }
             }
@@ -460,5 +529,13 @@ class BaseDataType(object):
     def pre_structure_tile_data(self, tile, nodeid, **kwargs):
         """
         Adds properties to a tile necessary for some clients, but not essential to the tile
+        """
+        pass
+
+    def validate_node(self, node):
+        """
+        Confirms a node is properly configured to collect data.
+        If improperly configured, this method should raise
+        a GraphValidationError
         """
         pass

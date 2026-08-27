@@ -41,7 +41,8 @@ class Migration(migrations.Migration):
             "i18n_properties": ["placeholder"]}}'
         WHERE datatype = 'string';
     """.format(
-        settings.LANGUAGE_CODE, "ltr" if not get_language_info(settings.LANGUAGE_CODE)["bidi"] else "rtl"
+        settings.LANGUAGE_CODE,
+        "ltr" if not get_language_info(settings.LANGUAGE_CODE)["bidi"] else "rtl",
     )
 
     reverse_sql = """
@@ -60,9 +61,7 @@ class Migration(migrations.Migration):
             "defaultValue": ""
         }}'
         WHERE datatype = 'string';
-    """.format(
-        settings.LANGUAGE_CODE
-    )
+    """.format(settings.LANGUAGE_CODE)
 
     operations = [
         migrations.RunSQL(sql, reverse_sql),

@@ -3,23 +3,29 @@ import copy
 from arches.app.models.system_settings import settings
 from arches.app.utils import import_class_from_string
 from django.utils.translation import gettext_lazy as _
+from django.db.migrations.serializer import BaseSerializer, Serializer
 from django.db.models import JSONField
-from django.db.models.sql.compiler import SQLInsertCompiler
-from django.db.models.sql.where import NothingNode
+from django.db.models.sql import Query
+from django.db.models.sql.compiler import SQLInsertCompiler, SQLUpdateCompiler
 from django.utils.translation import get_language
 
 
-class I18n_String(NothingNode):
-    """Subclassing NothingNode works around https://code.djangoproject.com/ticket/34745."""
+class I18n_String:
+    # Add attributes until https://github.com/archesproject/arches/issues/9840
+    contains_aggregate = False
+    contains_over_clause = False
+    contains_column_references = False
+    possibly_multivalued = False
 
     def __init__(self, value=None, lang=None, use_nulls=False, attname=None):
         self.attname = attname
         self.value = value
+        self.use_nulls = use_nulls
         self.raw_value = {}
         self.value_is_primitive = False
         self.lang = get_language() if lang is None else lang
 
-        self._parse(self.value, self.lang, use_nulls)
+        self._parse(self.value, self.lang, self.use_nulls)
 
     def _parse(self, value, lang, use_nulls):
         ret = {}
@@ -30,9 +36,9 @@ class I18n_String(NothingNode):
 
                 # the following is a fix for issue #9623 - using double quotation marks in i18n input
                 # re https://github.com/archesproject/arches/issues/9623
-                # the reason we have to do this next check is that we assumed that if the 
-                # json.loads method doesn't fail we have a python dict.  That's usually 
-                # true unless you have a simple string wrapped in quotes 
+                # the reason we have to do this next check is that we assumed that if the
+                # json.loads method doesn't fail we have a python dict.  That's usually
+                # true unless you have a simple string wrapped in quotes
                 # eg: '"hello world"' rather than simply 'hello world'
                 # the quoted string loads without error but is not a dict
                 # hence the need for this check
@@ -50,16 +56,29 @@ class I18n_String(NothingNode):
             ret = value
         self.raw_value = ret
 
+    def resolve_expression(
+        self, query=None, allow_joins=True, reuse=None, summarize=False, for_save=False
+    ):
+        """
+        Django needs this method to recognize this as both Resolvable & Compilable.
+        https://forum.djangoproject.com/t/revisiting-types-in-django-dep-14/37832/11
+        """
+        return self
+
     def as_sql(self, compiler, connection):
         """
         The "as_sql" method of this class is called by Django when the sql statement
         for each field in a model instance is being generated.
-        If we're inserting a new value then we can just set the localzed column to the json object.
+        If we're inserting a new value then we can just set the localized column to the json object.
         If we're updating a value for a specific language, then use the postgres "jsonb_set" command to do that
         https://www.postgresql.org/docs/9.5/functions-json.html
         """
 
-        if (self.value_is_primitive or self.value is None) and not isinstance(compiler, SQLInsertCompiler):
+        if (self.value_is_primitive or self.value is None) and isinstance(
+            compiler, SQLUpdateCompiler
+        ):
+            if self.value is None and not self.use_nulls:
+                self.value = ""
             self.sql = "jsonb_set(" + self.attname + ", %s, %s)"
             params = (f"{{{self.lang}}}", json.dumps(self.value))
         else:
@@ -182,6 +201,7 @@ class I18n_TextField(JSONField):
 
     def __init__(self, *args, **kwargs):
         from arches.app.utils.betterJSONSerializer import JSONSerializer
+
         self.use_nulls = kwargs.get("null", False)
         kwargs["encoder"] = JSONSerializer
         kwargs["default"] = I18n_String(use_nulls=self.use_nulls)
@@ -216,12 +236,20 @@ class I18n_TextField(JSONField):
         return I18n_String(value, attname=self.attname, use_nulls=self.use_nulls)
 
     def get_db_prep_save(self, value, connection):
-        """Override to avoid the optimization from Django 4.2 that
-        immediately returns `value` if it is None."""
-        return self.get_db_prep_value(value, connection)
+        if isinstance(value, (str, I18n_String)) or value is None:
+            return self.get_prep_value(value)
+        # ORM expressions should go through super().get_db_prep_save().
+        # Plain dicts don't need transforming either.
+        return super().get_db_prep_save(value, connection)
 
 
-class I18n_JSON(NothingNode):
+class I18n_JSON:
+    # Add attributes until https://github.com/archesproject/arches/issues/9840
+    contains_aggregate = False
+    contains_over_clause = False
+    contains_column_references = False
+    possibly_multivalued = False
+
     def __init__(self, value=None, lang=None, use_nulls=False, attname=None):
         self.attname = attname
         self.value = value
@@ -246,6 +274,8 @@ class I18n_JSON(NothingNode):
             ret = value.raw_value
         elif isinstance(value, dict):
             ret = value
+        else:
+            raise TypeError(value)
         self.raw_value = ret
 
         if "i18n_properties" in self.raw_value:
@@ -255,27 +285,52 @@ class I18n_JSON(NothingNode):
         except:
             pass
 
+    def resolve_expression(
+        self, query=None, allow_joins=True, reuse=None, summarize=False, for_save=False
+    ):
+        """
+        Django needs this method to recognize this as both Resolvable & Compilable.
+        https://forum.djangoproject.com/t/revisiting-types-in-django-dep-14/37832/11
+        """
+        return self
+
     def as_sql(self, compiler, connection):
         """
         The "as_sql" method of this class is called by Django when the sql statement
         for each field in a model instance is being generated.
-        If we're inserting a new value then we can just set the localzed column to the json object.
+        If we're inserting a new value then we can just set the localized column to the json object.
         If we're updating a value for a specific language, then use the postgres "jsonb_set" command to do that
         https://www.postgresql.org/docs/9.5/functions-json.html
+
+        Dangerous keys raise ValueError (with a descriptive message from Django).
         """
 
-        if (len(self.i18n_properties) == 0 and self.function is None) or isinstance(compiler, SQLInsertCompiler):
+        if (len(self.i18n_properties) == 0 and self.function is None) or isinstance(
+            compiler, SQLInsertCompiler
+        ):
             params = [json.dumps(self.to_localized_object())]
             sql = "%s"
         else:
+            # Forbid dangerous values.
+            sanitizer = Query(model=None)
+            for prop in (self.attname, *self.raw_value):
+                if prop is None:
+                    continue
+                if "%" in prop:
+                    raise ValueError
+                sanitizer.check_alias(prop)
+
             params = []
+            sql = "'{}'::jsonb"
             if self.function is not None:
                 clss = import_class_from_string(self.function)()
                 sql = clss.i18n_as_sql(self, compiler, connection)
-            else:
+            elif self.attname:
                 sql = self.attname
                 for prop, value in self.raw_value.items():
-                    escaped_value = json.dumps(value).replace("%", "%%").replace("'", "''")
+                    escaped_value = (
+                        json.dumps(value).replace("%", "%%").replace("'", "''")
+                    )
                     if prop in self.i18n_properties and isinstance(value, str):
                         sql = f"""CASE WHEN jsonb_typeof({self.attname}->'{prop}') = 'object'
                         THEN jsonb_set({sql}, array['{prop}','{self.lang}'], '{escaped_value}')
@@ -290,12 +345,12 @@ class I18n_JSON(NothingNode):
             # If on the other hand the root keys are different, then we assume that we can
             # just completely overwrite the saved object with our new json object
             sql = f"""
-                CASE WHEN {self.attname} ?& ARRAY{list(self.raw_value.keys())}
+                CASE WHEN {self.attname or "'{}'::jsonb"} ?& ARRAY{list(self.raw_value.keys())}
                 THEN {sql}
                 ELSE %s
                 END
             """
-            params.append(json.dumps(self.to_localized_object()).replace("%", "%%"))
+            params.append(json.dumps(self.to_localized_object()))
 
         return sql, tuple(params)
 
@@ -321,7 +376,18 @@ class I18n_JSON(NothingNode):
     # this class can emulate the "string" type
     # see https://docs.python.org/3/reference/datamodel.html?emulating-container-types#emulating-container-types
     def __getattr__(self, name):
-        mapping_methods = ["keys", "values", "items", "get", "clear", "setdefault", "pop", "popitem", "copy", "update"]
+        mapping_methods = [
+            "keys",
+            "values",
+            "items",
+            "get",
+            "clear",
+            "setdefault",
+            "pop",
+            "popitem",
+            "copy",
+            "update",
+        ]
         if name in mapping_methods:
             return getattr(self.raw_value, name)
         raise AttributeError
@@ -338,7 +404,10 @@ class I18n_JSON(NothingNode):
         use_raw_i18n_json -- defaults to False, set to True to return the raw object saved in the db
         """
 
-        if use_raw_i18n_json or ("i18n_properties" not in self.raw_value and "i18n_config" not in self.raw_value):
+        if use_raw_i18n_json or (
+            "i18n_properties" not in self.raw_value
+            and "i18n_config" not in self.raw_value
+        ):
             return self.raw_value
         else:
             if self.function is not None:
@@ -380,6 +449,7 @@ class I18n_JSONField(JSONField):
 
     def __init__(self, *args, **kwargs):
         from arches.app.utils.betterJSONSerializer import JSONSerializer
+
         kwargs["encoder"] = JSONSerializer
         super().__init__(*args, **kwargs)
 
@@ -401,12 +471,25 @@ class I18n_JSONField(JSONField):
 
     def get_prep_value(self, value):
         """
-        Perpares the value for insertion into the database
+        Prepares the value for insertion into the database
         """
 
         return I18n_JSON(value, attname=self.attname)
 
     def get_db_prep_save(self, value, connection):
-        """Override to avoid the optimization from Django 4.2 that
-        immediately returns `value` if it is None."""
-        return self.get_db_prep_value(value, connection)
+        if isinstance(value, (str, dict)):
+            return self.get_prep_value(value)
+        # ORM expressions should go through super().get_db_prep_save().
+        return super().get_db_prep_save(value, connection)
+
+
+# Register a lighter-weight serializer sufficient for generating migrations.
+class I18NFieldMigrationSerializer(BaseSerializer):
+    def serialize(self):
+        if isinstance(self.value, (I18n_String, I18n_JSONField)):
+            return f'"{self.value.serialize()}"', set()
+        return super().serialize()
+
+
+Serializer.register(I18n_String, I18NFieldMigrationSerializer)
+Serializer.register(I18n_JSONField, I18NFieldMigrationSerializer)

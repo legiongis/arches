@@ -1,28 +1,32 @@
 import uuid
 import datetime
+from http import HTTPStatus
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.urls import reverse
-from django.test.client import Client
 
 from arches.app.models.models import WorkflowHistory
 from tests.base_test import ArchesTestCase
 
+# these tests can be run from the command line via
+# python manage.py test tests.views.workflow_tests --settings="tests.test_settings"
+
 
 class WorkflowHistoryTests(ArchesTestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.client = Client()
-        cls.admin = User.objects.get(username="admin")
+    def setUpTestData(cls):
+        super().setUpTestData()
         cls.anonymous = User.objects.get(username="anonymous")
-        super().setUpClass()
+        cls.editor = User.objects.create_user(
+            username="editor", email="editor@resources.com", password="Test12345!"
+        )
+        group = Group.objects.get(name="Resource Editor")
+        group.user_set.add(cls.editor)
 
-    def setUp(self):
-        """The POST tests manipulate this object, so recreate it for simplicity."""
-        self.history = WorkflowHistory.objects.create(
-            workflowid=str(uuid.uuid1()),
-            workflowname='test-name',
-            user=self.admin,
+        cls.history = WorkflowHistory.objects.create(
+            workflowid=str(uuid.uuid4()),
+            workflowname="test-name",
+            user=cls.test_users["admin"],
             created=datetime.datetime.now(),
             completed=False,
             stepdata={
@@ -30,6 +34,7 @@ class WorkflowHistoryTests(ArchesTestCase):
                     "componentIdLookup": {
                         "project-name": "84d0578f-6061-4015-a44d-c7b64cdb0551",
                     },
+                    "stepId": "d0d644c2-3bbb-4f9c-aa52-4a4c1c544d07",
                     "locked": False,
                 },
                 # etc...
@@ -38,7 +43,7 @@ class WorkflowHistoryTests(ArchesTestCase):
                 "84d0578f-6061-4015-a44d-c7b64cdb0551": {
                     "value": {
                         "name": {
-                            "tileid": str(uuid.uuid1()),
+                            "tileid": str(uuid.uuid4()),
                             "value": {
                                 "en": {
                                     "direction": "ltr",
@@ -46,10 +51,10 @@ class WorkflowHistoryTests(ArchesTestCase):
                                 },
                             },
                         },
-                        "projectResourceId": str(uuid.uuid1()),
+                        "projectResourceId": str(uuid.uuid4()),
                         "type": {
-                            "tileid": str(uuid.uuid1()),
-                            "value": str(uuid.uuid1()),
+                            "tileid": str(uuid.uuid4()),
+                            "value": str(uuid.uuid4()),
                         },
                     },
                 },
@@ -57,47 +62,49 @@ class WorkflowHistoryTests(ArchesTestCase):
             },
         )
 
-    def tearDown(self):
-        self.history.delete()
-
     def test_get_nonexistent_workflow_history(self):
-        self.client.force_login(self.admin)
-        response = self.client.get(reverse("workflow_history", kwargs={"workflowid": uuid.uuid1()}))
+        self.client.force_login(self.test_users["admin"])
+        response = self.client.get(
+            reverse("workflow_history", kwargs={"workflowid": uuid.uuid4()})
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"{}")
 
     def test_get_workflow_history(self):
         self.client.force_login(self.anonymous)
-        response = self.client.get(reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}))
+        response = self.client.get(
+            reverse(
+                "workflow_history",
+                kwargs={"workflowid": str(self.history.workflowid)},
+            )
+        )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertIn(b"Permission Denied", response.content)
+        self.assertContains(
+            response, "Permission Denied", status_code=HTTPStatus.FORBIDDEN
+        )
 
-        self.client.force_login(self.admin)
-        response = self.client.get(reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}))
+        self.client.force_login(self.test_users["admin"])
+        response = self.client.get(
+            reverse(
+                "workflow_history", kwargs={"workflowid": str(self.history.workflowid)}
+            )
+        )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"sample name", response.content)
+        self.assertContains(response, "sample name", status_code=HTTPStatus.OK)
 
     def test_post_workflow_history(self):
         """Partial updates of componentdata and stepdata are allowed."""
-        self.client.force_login(self.anonymous)
-        response = self.client.post(reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}))
-
-        self.assertEqual(response.status_code, 403)
-        self.assertIn(b"Permission Denied", response.content)
-
-        self.client.force_login(self.admin)
         post_data = {
             "workflowid": str(self.history.workflowid),  # required
-            "workflowname": 'test-name',
+            "workflowname": "test-name",
             "stepdata": {
                 # Add a second step.
                 "set-project-statement": {
                     "componentIdLookup": {
                         "project-statement": "ae8f2027-f2e1-447c-8763-125e65d4b666",
                     },
+                    "stepId": "8a9d8ea7-9430-4732-9cc4-6efacf6b43b7",
                     "locked": False,
                 },
             },
@@ -108,7 +115,7 @@ class WorkflowHistoryTests(ArchesTestCase):
                 "ae8f2027-f2e1-447c-8763-125e65d4b666": {
                     "value": {
                         "name": {
-                            "tileid": str(uuid.uuid1()),
+                            "tileid": str(uuid.uuid4()),
                             "value": {
                                 "en": {
                                     "direction": "ltr",
@@ -116,18 +123,36 @@ class WorkflowHistoryTests(ArchesTestCase):
                                 },
                             },
                         },
-                        "projectResourceId": str(uuid.uuid1()),
+                        "projectResourceId": str(uuid.uuid4()),
                         "type": {
-                            "tileid": str(uuid.uuid1()),
-                            "value": str(uuid.uuid1()),
+                            "tileid": str(uuid.uuid4()),
+                            "value": str(uuid.uuid4()),
                         },
                     },
                 }
             },
         }
 
+        # Non-superuser cannot update someone else's workflow.
+        self.client.force_login(self.editor)
         response = self.client.post(
-            reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}),
+            reverse(
+                "workflow_history",
+                kwargs={"workflowid": str(self.history.workflowid)},
+            ),
+            post_data,
+            content_type="application/json",
+        )
+
+        self.assertContains(
+            response, "Permission Denied", status_code=HTTPStatus.FORBIDDEN
+        )
+
+        self.client.force_login(self.test_users["admin"])
+        response = self.client.post(
+            reverse(
+                "workflow_history", kwargs={"workflowid": str(self.history.workflowid)}
+            ),
             post_data,
             content_type="application/json",
         )
@@ -140,11 +165,17 @@ class WorkflowHistoryTests(ArchesTestCase):
         self.assertEqual(len(self.history.componentdata), 2)
 
     def test_complete_workflow_history(self):
-        self.client.force_login(self.admin)
+        self.client.force_login(self.test_users["admin"])
 
         response = self.client.post(
-            reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}),
-            {"workflowid": str(self.history.workflowid), "workflowname": 'test-name', "completed": True},
+            reverse(
+                "workflow_history", kwargs={"workflowid": str(self.history.workflowid)}
+            ),
+            {
+                "workflowid": str(self.history.workflowid),
+                "workflowname": "test-name",
+                "completed": True,
+            },
             content_type="application/json",
         )
 
@@ -154,10 +185,21 @@ class WorkflowHistoryTests(ArchesTestCase):
         self.assertTrue(self.history.completed)
 
     def test_no_edits_after_completed(self):
+        self.history.completed = True
+        self.history.save()
+        self.client.force_login(self.test_users["admin"])
+
         response = self.client.post(
-            reverse("workflow_history", kwargs={"workflowid": str(self.history.workflowid)}),
-            {"workflowid": str(self.history.workflowid), "completed": False},
+            reverse(
+                "workflow_history",
+                kwargs={"workflowid": str(self.history.workflowid)},
+            ),
+            {
+                "workflowid": str(self.history.workflowid),
+                "workflowname": "test-name",
+                "completed": False,
+            },
             content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
