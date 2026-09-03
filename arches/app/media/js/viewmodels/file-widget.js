@@ -174,9 +174,9 @@ define([
 
         this.filesJSON.subscribe(function(value) {
             if (self.formData) {
-                if (_.contains(self.formData.keys(), 'file-list_' + self.node.nodeid)) {
-                    self.formData.delete('file-list_' + self.node.nodeid);
-                }
+                // manually backport fix from upstream arches, see:
+                // https://github.com/archesproject/arches/pull/12844
+                self.formData.delete('file-list_' + self.node.nodeid);
             }
             if (value.length > 1 && self.selectedFile() == undefined) { self.selectedFile(value[0]); }
             _.each(self.filesForUpload(), function(file) {
