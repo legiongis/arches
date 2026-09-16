@@ -237,6 +237,18 @@ class StandardSearchView(BaseSearchView):
             if search_filter:
                 search_filter.execute_query(search_query_object, response_object)
 
+        if settings.DEBUG:
+            from pathlib import Path
+            from arches.app.utils.betterJSONSerializer import JSONSerializer
+            import json
+            final_query = json.loads(JSONSerializer().serialize(search_query_object['query']._dsl))
+            ## remove some non-standard query keys to allow easy copy/paste
+            ## into an Elasticsearch client
+            final_query.pop("source_includes", None)
+            final_query.pop("source_excludes", None)
+            with open(Path(settings.LOG_DIR, "final_dsl.json"), "w") as o:
+                json.dump(final_query, o, indent=1)
+
         if response_object["results"] is not None:
             # allow filters to modify the results
             for filter_type, querystring in list(sorted_query_obj.items()):

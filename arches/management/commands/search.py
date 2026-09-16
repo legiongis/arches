@@ -66,23 +66,25 @@ class Command(BaseCommand):
 
     def register(self, source):
         """
-        Inserts a search component into the arches db
-
+        Inserts a search component into the arches db. If enabled=True,
+        insert this comonponent into the standard search configs.
         """
 
         utils.load_source("sc_source", source)
-
-        if getattr(sys.modules, "sc_source", None):
+        if sys.modules.get("sc_source"):
             details = sys.modules["sc_source"].details
 
             try:
                 uuid.UUID(details["searchcomponentid"])
-            except:
+            except (KeyError, ValueError):
                 details["searchcomponentid"] = str(uuid.uuid4())
             print(
                 "Registering the search component, %s, with componentid: %s"
                 % (details["name"], details["searchcomponentid"])
             )
+
+            layoutSortorder = details.get("layoutSortorder", 1)
+            enabled = details.get("enabled")
 
             instance = models.SearchComponent(
                 searchcomponentid=details["searchcomponentid"],
@@ -93,11 +95,30 @@ class Command(BaseCommand):
                 type=details["type"],
                 componentpath=details["componentpath"],
                 componentname=details["componentname"],
-                sortorder=details["sortorder"],
-                enabled=details["enabled"],
             )
 
             instance.save()
+
+            if enabled:
+
+                standard_search = models.SearchComponent.objects.get(
+                    componentname="standard-search-view"
+                )
+                filters = sorted(
+                    standard_search.config["linkedSearchFilters"],
+                    key=lambda x: x["layoutSortorder"]
+                )
+                filters.insert(layoutSortorder-1, {
+                    "componentname": instance.componentname,
+                    "searchcomponentid": instance.searchcomponentid,
+                    "layoutSortorder": layoutSortorder,
+                })
+                # reset layout sorder to make it sequential
+                for n, filter in enumerate(filters, start=1):
+                    filter["layoutSortorder"] = n
+
+                standard_search.config["linkedSearchFilters"] = filters
+                standard_search.save()
 
     def update(self, source):
         """
@@ -114,7 +135,6 @@ class Command(BaseCommand):
     def unregister(self, name):
         """
         Removes the search component from the system
-
         """
 
         try:
@@ -122,6 +142,21 @@ class Command(BaseCommand):
             instance.delete()
         except Exception as e:
             print(e)
+
+        # reset the standard search component configs to remove this filter
+        standard_search = models.SearchComponent.objects.get(
+            componentname="standard-search-view"
+        )
+        filters = [i for i in standard_search.config["linkedSearchFilters"]
+                   if not i["componentname"] == name]
+        filters.sort(key=lambda x: x["layoutSortorder"])
+
+        # reset layout sorder to make it sequential
+        for n, filter in enumerate(filters, start=1):
+            filter["layoutSortorder"] = n
+
+        standard_search.config["linkedSearchFilters"] = filters
+        standard_search.save()
 
     def list(self):
         """
