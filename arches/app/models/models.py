@@ -1465,7 +1465,7 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     """Deletes file from filesystem
     when corresponding `FileValue` object is deleted.
     """
-    if instance.value.path:
+    if instance.value:
         try:
             if os.path.isfile(instance.value.path):
                 os.remove(instance.value.path)

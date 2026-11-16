@@ -611,7 +611,7 @@ class ResourceEditLogView(BaseManagerView):
                         resourceclassid=settings.SYSTEM_SETTINGS_RESOURCE_MODEL_ID
                     )
                     .filter(nodegroupid__in=permitted_nodegroupids)
-                    .order_by("-timestamp")[:100]
+                    .order_by("-timestamp")[:2000]
                 )
             permitted_ids = {
                 resource_id

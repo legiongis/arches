@@ -246,11 +246,16 @@ class GeojsonFeatureCollectionDataType(BaseDataType):
 
     def split_geom(self, feature, max_feature_in_bytes=32766):
         geom = feature["geometry"]
-        coordinates = (
-            geom["coordinates"]
-            if geom["type"] == "LineString"
-            else geom["coordinates"][0]
-        )
+
+        if geom["type"] == "LineString":
+            coordinates = geom["coordinates"]
+        elif geom["type"] == "MultiPolygon":
+            coordinates = []
+            for poly in geom["coordinates"]:
+                coordinates += poly[0]
+        else:
+            coordinates = geom["coordinates"][0]
+
         num_points = len(coordinates)
         num_chunks = self._feature_length_in_bytes(feature) / max_feature_in_bytes
         max_points = int(num_points / num_chunks)

@@ -10,7 +10,7 @@ define([
         constructor: function() {
             this.name = 'Base Search View';
             this.filter = {};
-            this.defaultQuery = {};
+            this.defaultQuery = {"rule-filter":"enabled"};
             Backbone.View.apply(this, arguments);
         },
 
